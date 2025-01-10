@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <!-- <title></title> -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <link rel="stylesheet" href="/styles/index.css">
+        <script src="https://unpkg.com/htmx.org@2.x.x"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+        <!-- <script>
+            document.addEventListener('alpine:init', () => {
+            });
+        </script> -->
+    </head>
+
+    <body>
+        <div id="app">
+            <form>
+                <fieldset required>
+                    <legend>How are you feeling?</legend>
+                    <div>
+                      <input type="radio" id="0" value="0" name="emotion" />
+                      <label for="0">😡</label>
+                    </div>
+                  
+                    <div>
+                      <input type="radio" id="1" value="1" name="emotion" />
+                      <label for="1">😔</label>
+                    </div>
+                  
+                    <div>
+                      <input type="radio" id="2" value="2" name="emotion" />
+                      <label for="2">😒</label>
+                    </div>
+
+                    <div>
+                        <input type="radio" id="3" value="3" name="emotion" />
+                        <label for="3">🙂</label>
+                      </div>
+
+                    <div>
+                    <input type="radio" id="4" value="4" name="emotion" />
+                    <label for="4">🤩</label>
+                    </div>
+                  </fieldset>
+                  
+                  <span>⬅️ <b>10/05</b> ➡️</span>
+                  <textarea></textarea>
+
+                  <button type="submit">Save</button>
+
+            </form>
+        </div>
+    </body>
+
+    <style>
+        body {
+            margin: 10px;
+        }
+
+        fieldset {
+          display: flex;
+          padding: 10px;
+          width: fit-content;
+          margin-bottom: 5px;
+        }
+        
+        fieldset label {
+          display: inline-block;
+          margin-right: 10px;
+        }
+
+        textarea {
+            height: 25rem;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+      </style>
+</html>
