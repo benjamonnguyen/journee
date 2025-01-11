@@ -1,0 +1,84 @@
+<div id="app"><form><div id="journal-textarea" style="margin-bottom: 15px;"><span>⬅️ <b>10/05</b> ➡️</span> <textarea autofocus></textarea></div><style>
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 4px;
+            outline: none;
+            margin-top: 20px;
+        }
+
+        /* Hide default thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            position: relative;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            position: relative;
+        }
+
+        .slider-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .value-display {
+            font-size: 16px;
+        }
+
+        #slider-thumb {
+            position: absolute;
+            font-size: 22px;
+            transform: translateX(-50%) translateY(-75%);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style><div class="slider-container"><div style="position: relative;"><legend class="value-display">Energy Level: <span id="slider-value">100</span>%</legend> <input type="range" id="energy-slider" name="energy-level" min="0" max="100" value="50"><div id="slider-thumb">😐</div></div></div><script id="energy-thresholds" type="application/json">[{"ID":1,"Emoji":"💀","Threshold":11},{"ID":2,"Emoji":"😴","Threshold":22},{"ID":3,"Emoji":"🥱","Threshold":33},{"ID":4,"Emoji":"😩","Threshold":44},{"ID":5,"Emoji":"😑","Threshold":55},{"ID":6,"Emoji":"😌","Threshold":66},{"ID":7,"Emoji":"🙂","Threshold":77},{"ID":8,"Emoji":"😊","Threshold":88},{"ID":9,"Emoji":"🤩","Threshold":100}]
+</script><script>
+        const sliderValue = document.getElementById('slider-value');
+        const slider = document.getElementById('energy-slider');
+        const sliderThumb = document.getElementById('slider-thumb');
+
+        const energyThresholds = JSON.parse(document.getElementById('energy-thresholds').textContent);
+
+        function getEmoji(value) {
+            for (let i = 0; i < energyThresholds.length; i++) {
+                if (value <= energyThresholds[i].Threshold) {
+                    return energyThresholds[i].Emoji;
+                }
+            }
+            return energyThresholds[-1].Emoji;
+        }
+
+        function updateSliderThumb() {
+            const value = slider.value;
+            const percent = (value - slider.min) / (slider.max - slider.min);
+            const thumbPosition = percent * (slider.offsetWidth);
+            sliderThumb.style.left = `${thumbPosition}px`;
+        }
+
+        function updateDisplay() {
+            const value = slider.value;
+            sliderValue.textContent = value;
+            sliderThumb.textContent = getEmoji(value);
+            updateSliderThumb();
+        }
+
+        slider.addEventListener('input', updateDisplay);
+        window.addEventListener('resize', updateSliderThumb);
+
+        // Initial update
+        updateDisplay();
+    </script><fieldset style="margin-bottom: 10px;" required><legend>How did you feel today?</legend> <div><input type="radio" id="1" value="1" name="emotion-selection"> <label for="1">😡</label></div><div><input type="radio" id="2" value="2" name="emotion-selection"> <label for="2">😰</label></div><div><input type="radio" id="3" value="3" name="emotion-selection"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" name="emotion-selection"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" name="emotion-selection"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" name="emotion-selection"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" name="emotion-selection"> <label for="7">🙂</label></div><div><input type="radio" id="8" value="8" name="emotion-selection"> <label for="8">😄</label></div><div><input type="radio" id="9" value="9" name="emotion-selection"> <label for="9">🤩</label></div></fieldset></form></div>

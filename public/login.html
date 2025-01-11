@@ -8,42 +8,7 @@
         <link rel="stylesheet" href="/styles/index.css">
     </head>
 
-    <body>
-        <div class="login-container">
-            <div class="login-header">
-                <h1>journee</h1>
-            </div>
-            <form>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" autofocus required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" class="login-button">Log In</button>
-            </form>
-            <div class="extra-links">
-                <a href="#">Forgot Password?</a>
-                <span class="divider">|</span>
-                <a href="#">Sign Up</a>
-            </div>
-        </div>
-    </body>
-
     <style>
-        h1 {
-            font-family: serif;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
         .login-container {
             background: white;
             padding: 2rem;
@@ -129,5 +94,31 @@
             color: var(--grey-400);
         }
     </style>
+
+    <body>
+        <main>
+            <div class="login-container">
+                <div class="login-header">
+                    <h1 class="logo">journee</h1>
+                </div>
+                <form>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" autofocus required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="login-button">Log In</button>
+                </form>
+                <div class="extra-links">
+                    <a href="#">Forgot Password?</a>
+                    <span class="divider">|</span>
+                    <a href="#">Sign Up</a>
+                </div>
+            </div>
+        </main>
+    </body>
 
 </html>

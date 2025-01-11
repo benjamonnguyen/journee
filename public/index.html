@@ -3,7 +3,7 @@
 
     <head>
         <meta charset="utf-8">
-        <!-- <title></title> -->
+        <title>journee</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
         <link rel="stylesheet" href="/styles/index.css">
         <script src="https://unpkg.com/htmx.org@2.x.x"></script>
@@ -14,46 +14,6 @@
             });
         </script> -->
     </head>
-
-    <body>
-        <div id="app">
-            <form>
-                <fieldset required>
-                    <legend>How are you feeling?</legend>
-                    <div>
-                      <input type="radio" id="0" value="0" name="emotion" />
-                      <label for="0">😡</label>
-                    </div>
-                  
-                    <div>
-                      <input type="radio" id="1" value="1" name="emotion" />
-                      <label for="1">😔</label>
-                    </div>
-                  
-                    <div>
-                      <input type="radio" id="2" value="2" name="emotion" />
-                      <label for="2">😒</label>
-                    </div>
-
-                    <div>
-                        <input type="radio" id="3" value="3" name="emotion" />
-                        <label for="3">😊</label>
-                      </div>
-
-                    <div>
-                    <input type="radio" id="4" value="4" name="emotion" />
-                    <label for="4">🤩</label>
-                    </div>
-                  </fieldset>
-                  
-                  <span>⬅️ <b>10/05</b> ➡️</span>
-                  <textarea></textarea>
-
-                  <button type="submit">Save</button>
-
-            </form>
-        </div>
-    </body>
 
     <style>
         body {
@@ -83,4 +43,14 @@
             padding: 2px 4px;
         }
       </style>
+
+    <body>
+        <navbar>
+            <h1 class="logo">journee</h1>
+            <div>
+                <a href="#">Log out</a>
+            </div>
+        </navbar>
+        <main hx-trigger="load" hx-get="/app.html" hx-swap="innerHTML"></main>
+    </body>
 </html>

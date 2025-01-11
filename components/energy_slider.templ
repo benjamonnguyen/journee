@@ -1,0 +1,170 @@
+package components
+
+import "fmt"
+
+templ energySlider(min, max int, energyThresholds []energyThreshold) {
+    <style>
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 4px;
+            outline: none;
+            margin-top: 20px;
+        }
+
+        /* Hide default thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            position: relative;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            position: relative;
+        }
+
+        .slider-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .value-display {
+            font-size: 16px;
+        }
+
+        #slider-thumb {
+            position: absolute;
+            font-size: 22px;
+            transform: translateX(-50%) translateY(-75%);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+
+    <div class="slider-container">
+        <div style="position: relative;">
+            <legend class="value-display">Energy Level: <span id="slider-value">100</span>%</legend>
+            <input type="range" id="energy-slider" name="energy-level"
+                min={ fmt.Sprintf("%d", min) }
+                max={ fmt.Sprintf("%d", max) }
+                value={ fmt.Sprintf("%d", (min + max)/2) } />
+            <div id="slider-thumb">😐</div>
+        </div>
+    </div>
+
+    @templ.JSONScript("energy-thresholds", energyThresholds)
+    <script>
+        const sliderValue = document.getElementById('slider-value');
+        const slider = document.getElementById('energy-slider');
+        const sliderThumb = document.getElementById('slider-thumb');
+
+        const energyThresholds = JSON.parse(document.getElementById('energy-thresholds').textContent);
+
+        function getEmoji(value) {
+            for (let i = 0; i < energyThresholds.length; i++) {
+                if (value <= energyThresholds[i].Threshold) {
+                    return energyThresholds[i].Emoji;
+                }
+            }
+            return energyThresholds[-1].Emoji;
+        }
+
+        function updateSliderThumb() {
+            const value = slider.value;
+            const percent = (value - slider.min) / (slider.max - slider.min);
+            const thumbPosition = percent * (slider.offsetWidth);
+            sliderThumb.style.left = `${thumbPosition}px`;
+        }
+
+        function updateDisplay() {
+            const value = slider.value;
+            sliderValue.textContent = value;
+            sliderThumb.textContent = getEmoji(value);
+            updateSliderThumb();
+        }
+
+        slider.addEventListener('input', updateDisplay);
+        window.addEventListener('resize', updateSliderThumb);
+
+        // Initial update
+        updateDisplay();
+    </script>
+}
+
+type energyLevel int
+const (
+    Dead energyLevel = iota + 1
+    DozingOff
+    Exhausted
+    Tired
+    Neutral
+    OK
+    Good
+    Great
+    Amazing
+)
+
+var energyThresholds = []energyThreshold{
+    {
+        ID: Dead,
+        Emoji: "💀",
+        Threshold: 11,
+    },
+    {
+        ID: DozingOff,
+        Emoji: "😴",
+        Threshold: 22,
+    },
+    {
+        ID: Exhausted,
+        Emoji: "🥱",
+        Threshold: 33,
+    },
+    {
+        ID: Tired,
+        Emoji: "😩",
+        Threshold: 44,
+    },
+    {
+        ID: Neutral,
+        Emoji: "😑",
+        Threshold: 55,
+    },
+    {
+        ID: OK,
+        Emoji: "😌",
+        Threshold: 66,
+    },
+    {
+        ID: Good,
+        Emoji: "🙂",
+        Threshold: 77,
+    },
+    {
+        ID: Great,
+        Emoji: "😊",
+        Threshold: 88,
+    },
+    {
+        ID: Amazing,
+        Emoji: "🤩",
+        Threshold: 100,
+    },
+}
+
+type energyThreshold struct {
+    ID energyLevel
+    Emoji string
+    Threshold int
+}
