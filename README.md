@@ -5,10 +5,11 @@
 2. Reflect
 3. Connect / Visualize
 
-Submit your daily journal entry -> Reflect on goals, screentime, etc. -> See your friends emotion/goals/status and send encouragement
+Submit your daily journal entry -> Reflect on goals, screentime, etc. express gratitude -> See your friends emotion/goals/status and send encouragement
 
 ## Features
 - Track emotions (allow custom)
+- Share excerpt, goal, gratitude, screentime, etc (can only choose 1 to share)
 - Visualize your journey on the dashboard
 - Set goals and keep accountable (track habits?)
 
