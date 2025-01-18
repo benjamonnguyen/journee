@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Login</title>
         <link rel="stylesheet" href="/styles/index.css">
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
 
     <style>
@@ -17,6 +18,9 @@
             width: 100%;
             max-width: 400px;
             margin: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .login-header {
@@ -34,6 +38,10 @@
             color: var(--grey-400);
         }
 
+        form {
+            width: 100%;
+        }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -45,7 +53,7 @@
         }
 
         .form-group input {
-            width: 100%;
+            width: 95%;
             padding: 0.75rem;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -93,25 +101,32 @@
             margin: 0 0.5rem;
             color: var(--grey-400);
         }
+
+        #status {
+            color: var(--red-primary);
+            font-size: small;
+            margin-top: 1.5rem;
+        }
     </style>
 
     <body>
         <main>
-            <div class="login-container">
+            <div class="login-container" x-data="{ form: { Email: '', Password: '' }, status: '' }">
                 <div class="login-header">
                     <h1 class="logo">journee</h1>
                 </div>
-                <form>
+                <form @submit.prevent="login">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" autofocus required>
+                        <input type="email" x-model="form.Email" autofocus required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
+                        <input type="password" x-model="form.Password" required>
                     </div>
                     <button type="submit" class="login-button">Log In</button>
                 </form>
+                <span id="status" x-text="status" x-show="status"></span>
                 <div class="extra-links">
                     <a href="#">Forgot Password?</a>
                     <span class="divider">|</span>
@@ -120,5 +135,23 @@
             </div>
         </main>
     </body>
+
+    <script>
+        async function login() {
+            const resp = await fetch("/login", {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                method: "POST",
+                body: JSON.stringify(this.form),
+            });
+
+            if (!resp.ok) {
+                this.status = (await resp.json()).message;
+            } else {
+                window.location.href = "/";
+            }
+        }
+    </script>
 
 </html>

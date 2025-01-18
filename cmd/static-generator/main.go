@@ -8,10 +8,10 @@ import (
 )
 
 func main() {
-	f, err := os.Create("public/app.html")
+	f, err := os.Create("app/journal_view.html")
 	panicIf(err)
 
-	app := components.App()
+	app := components.JournalView()
 	app.Render(context.Background(), f)
 }
 

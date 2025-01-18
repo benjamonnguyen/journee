@@ -8,10 +8,10 @@
 Submit your daily journal entry -> Reflect on goals, screentime, etc. express gratitude -> See your friends emotion/goals/status and send encouragement
 
 ## Features
-- Track emotions and energy levels (allow custom?)
-- Share excerpt, goal, gratitude, screentime, etc (can only choose 1 to share)
-- Visualize your journey on the dashboard
-- Set goals and keep accountable (track habits?)
+- [~] Track emotions and energy levels (allow custom?)
+- [ ] Share excerpt, goal, gratitude, screentime, etc (can only choose 1 to share)
+- [ ] Visualize your journey on the dashboard
+- [ ] Set goals and keep accountable (track habits?)
 
 ## Parking lot
 - Quotes API
@@ -19,11 +19,11 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 - LLM integration for memories?
 
 ## TODO
-- Pocketbase
-- .air.toml
+- [ ] Load user's journal data
+- [ ] Add persistence for rest of journal inputs
+- [ ] .air.toml
 
 ![alt text](image.png)
 
-# templ
-templ generate
-generate static html files for production
+# Production
+- `make gen` to generate static files from templates

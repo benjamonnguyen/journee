@@ -34,9 +34,8 @@ templ energySlider(min, max int, energyThresholds []energyThreshold) {
             position: relative;
         }
 
-        .slider-container {
+        #energy-slider-container {
             text-align: center;
-            margin-bottom: 10px;
         }
 
         .value-display {
@@ -52,14 +51,13 @@ templ energySlider(min, max int, energyThresholds []energyThreshold) {
         }
     </style>
 
-    <div class="slider-container">
+    <div id="energy-slider-container">
         <div style="position: relative;">
             <legend class="value-display">Energy Level: <span id="slider-value">100</span>%</legend>
             <input type="range" id="energy-slider" name="energy-level"
                 min={ fmt.Sprintf("%d", min) }
-                max={ fmt.Sprintf("%d", max) }
-                value={ fmt.Sprintf("%d", (min + max)/2) } />
-            <div id="slider-thumb">😐</div>
+                max={ fmt.Sprintf("%d", max) } />
+            <div id="slider-thumb">⚪</div>
         </div>
     </div>
 
@@ -80,8 +78,8 @@ templ energySlider(min, max int, energyThresholds []energyThreshold) {
             return energyThresholds[-1].Emoji;
         }
 
-        function updateSliderThumb() {
-            const value = slider.value;
+        function updateSliderThumb(val = null) {
+            const value = val ?? slider.value;
             const percent = (value - slider.min) / (slider.max - slider.min);
             const thumbPosition = percent * (slider.offsetWidth);
             sliderThumb.style.left = `${thumbPosition}px`;
@@ -98,7 +96,7 @@ templ energySlider(min, max int, energyThresholds []energyThreshold) {
         window.addEventListener('resize', updateSliderThumb);
 
         // Initial update
-        updateDisplay();
+        updateSliderThumb((slider.min + slider.max)/2);
     </script>
 }
 

@@ -60,9 +60,8 @@ func energySlider(min, max int, energyThresholds []energyThreshold) templ.Compon
             position: relative;
         }
 
-        .slider-container {
+        #energy-slider-container {
             text-align: center;
-            margin-bottom: 10px;
         }
 
         .value-display {
@@ -81,7 +80,7 @@ func energySlider(min, max int, energyThresholds []energyThreshold) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</style><div class=\"slider-container\"><div style=\"position: relative;\"><legend class=\"value-display\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</style><div id=\"energy-slider-container\"><div style=\"position: relative;\"><legend class=\"value-display\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -124,19 +123,11 @@ func energySlider(min, max int, energyThresholds []energyThreshold) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" value=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(fmt.Sprintf("%d", (min+max)/2)))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div id=\"slider-thumb\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Var6 := `😐`
+		templ_7745c5c3_Var6 := `⚪`
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var6)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -169,8 +160,8 @@ func energySlider(min, max int, energyThresholds []energyThreshold) templ.Compon
             return energyThresholds[-1].Emoji;
         }
 
-        function updateSliderThumb() {
-            const value = slider.value;
+        function updateSliderThumb(val = null) {
+            const value = val ?? slider.value;
             const percent = (value - slider.min) / (slider.max - slider.min);
             const thumbPosition = percent * (slider.offsetWidth);
             sliderThumb.style.left = ` + "`" + `${thumbPosition}px` + "`" + `;
@@ -187,7 +178,7 @@ func energySlider(min, max int, energyThresholds []energyThreshold) templ.Compon
         window.addEventListener('resize', updateSliderThumb);
 
         // Initial update
-        updateDisplay();
+        updateSliderThumb((slider.min + slider.max)/2);
     `
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var7)
 		if templ_7745c5c3_Err != nil {

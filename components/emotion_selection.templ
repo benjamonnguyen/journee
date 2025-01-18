@@ -57,7 +57,8 @@ var emotionOptions = []emotionOption{
 }
 
 templ emotionSelection(options []emotionOption) {
-    <fieldset style="margin-bottom: 10px;" required>
+    // TODO (D) style pointer, zoom on hover, invisible radio, glowing selected emoji
+    <fieldset id="emotion-selection" required>
         <legend>How did you feel today?</legend>
         for _, opt := range options {
             <div>
