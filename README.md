@@ -19,11 +19,9 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 - LLM integration for memories?
 
 ## TODO
-- [ ] Load user's journal data
-- [ ] Add persistence for rest of journal inputs
 - [ ] .air.toml
 
 ![alt text](image.png)
 
-# Production
+# Before Production
 - `make gen` to generate static files from templates
