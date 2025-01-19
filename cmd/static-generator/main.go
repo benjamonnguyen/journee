@@ -4,14 +4,14 @@ import (
 	"context"
 	"os"
 
-	"benjinguyen.me/journee/components"
+	"benjinguyen.me/journee/journal"
 )
 
 func main() {
 	f, err := os.Create("app/journal_view.html")
 	panicIf(err)
 
-	app := components.JournalView()
+	app := journal.JournalView()
 	app.Render(context.Background(), f)
 }
 

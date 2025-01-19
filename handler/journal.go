@@ -1,14 +1,17 @@
 package handler
 
 import (
+	"benjinguyen.me/journee/journal"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 func UpsertJournal(e *core.RequestEvent) error {
 	var form struct {
-		Date    string
-		Content string
+		Date        string
+		Content     string
+		EmotionID   journal.EmotionID
+		EnergyLevel int `json:"EnergyLevel,omitempty"`
 	}
 	if err := e.BindBody(&form); err != nil {
 		return e.BadRequestError("", err)
