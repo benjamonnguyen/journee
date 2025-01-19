@@ -32,14 +32,14 @@ func JournalView() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Var2 := `
-        #journal-textarea {
+        #journal-content-container {
             margin-bottom: 15px;
         }
-        #journal-textarea input {
+        #journal-content {
             font-size:12pt;
             resize: none;
             width: 100%;
-            height: 20vh;
+            height: 40vh;
         }
         #form-footer {
             display: flex;
@@ -67,7 +67,7 @@ func JournalView() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</style><div id=\"app\" x-data=\"{\n            form: {\n                Date: new Date().toLocaleDateString(&#39;en-CA&#39;),\n                Content: &#39;&#39;,\n                EnergyLevel: null,\n                EmotionID: 0,\n            },\n            status: &#39;&#39;,\n        }\"><form @submit.prevent=\"onSubmit\"><input type=\"date\" name=\"date\" x-model=\"form.Date\"><div id=\"journal-textarea\"><textarea name=\"content\" x-model=\"form.Content\" autofocus></textarea></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</style><div id=\"app\" x-data=\"{\n            form: {\n                Date: new Date().toLocaleDateString(&#39;en-CA&#39;),\n                Content: &#39;&#39;,\n                EnergyLevel: -1,\n                EmotionID: 0,\n            },\n            status: &#39;&#39;,\n        }\"><form @submit.prevent=\"onSubmit\"><input type=\"date\" name=\"date\" x-model=\"form.Date\"><div id=\"journal-content-container\"><textarea id=\"journal-content\" name=\"content\" x-model=\"form.Content\" autofocus></textarea></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -94,6 +94,8 @@ func JournalView() templ.Component {
 		}
 		templ_7745c5c3_Var4 := `
         async function onSubmit() {
+            this.form.EnergyLevel = parseInt(this.form.EnergyLevel);
+            this.form.EmotionID = parseInt(this.form.EmotionID);
             const response = await fetch("/api/journal", {
                 method: "POST",
                 body: JSON.stringify(this.form),
@@ -166,7 +168,15 @@ func emotionSelection() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" x-model=\"form.EmotionID\" name=\"emotion-selection\"> <label for=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" x-model=\"form.EmotionID\" name=\"emotion-selection\" aria-label=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(opt.Name))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <label for=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

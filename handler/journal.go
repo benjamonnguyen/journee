@@ -7,21 +7,16 @@ import (
 )
 
 func UpsertJournal(e *core.RequestEvent) error {
-	var form struct {
-		Date        string
-		Content     string
-		EmotionID   journal.EmotionID
-		EnergyLevel int `json:"EnergyLevel,omitempty"`
-	}
-	if err := e.BindBody(&form); err != nil {
+	var request journal.UpsertJournalRequest
+	if err := e.BindBody(&request); err != nil {
 		return e.BadRequestError("", err)
 	}
-	e.App.Logger().Debug("upserting journal", "form", form)
+	e.App.Logger().Debug("upserting journal", "request", request)
 
 	record, _ := e.App.FindFirstRecordByFilter(
 		"journals",
-		"date = {:date}",
-		dbx.Params{"date": form.Date},
+		"date = {:date} &&  user = {:user}",
+		dbx.Params{"date": request.Date, "user": e.Auth.Id},
 	)
 
 	if record == nil {
@@ -30,16 +25,20 @@ func UpsertJournal(e *core.RequestEvent) error {
 			return err
 		}
 
-		e.App.Logger().Debug("collection", "id", collection.Id)
-		e.App.Logger().Debug("auth", "auth", e.Auth)
-		e.App.Logger().Debug("user", "id", e.Auth.Id)
-
 		record = core.NewRecord(collection)
-		record.Set("date", form.Date)
+		record.Set("date", request.Date)
 		record.Set("user", e.Auth.Id)
 	}
 
-	record.Set("content", form.Content)
+	// update
+	record.Set("content", request.Content)
+	record.Set("emotion_id", int(request.EmotionID))
+	if request.EnergyLevel == nil {
+		record.Set("energy_level", -1)
+	} else {
+		record.Set("energy_level", *request.EnergyLevel)
+	}
+	e.App.Logger().Debug("saving journal record", "record", record)
 	if err := e.App.Save(record); err != nil {
 		return err
 	}

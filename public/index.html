@@ -40,7 +40,18 @@
         }
       </style>
 
-    <body x-data>
+    <body x-data
+    @keyup.s="
+    if ($event.ctrlKey) {
+        $event.preventDefault();
+        document.querySelector('button[type=\'submit\']')?.click();
+    }"
+    @keyup.e="
+    if ($event.ctrlKey) {
+        $event.preventDefault();
+        document.querySelector('#journal-content')?.focus();
+    }"
+    >
         <navbar>
             <h1 class="logo">journee</h1>
             <div>

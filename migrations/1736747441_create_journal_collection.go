@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	"benjinguyen.me/journee/util"
+	"benjinguyen.me/journee/types"
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 )
@@ -11,11 +11,11 @@ func init() {
 		collection := core.NewBaseCollection("journals")
 
 		// set rules
-		collection.ViewRule = util.StrPtr("@request.auth.id != ''")
-		collection.CreateRule = util.StrPtr(
+		collection.ViewRule = types.Pointer[string]("@request.auth.id != ''")
+		collection.CreateRule = types.Pointer[string](
 			"@request.auth.id != '' && @request.body.user = @request.auth.id",
 		)
-		collection.UpdateRule = util.StrPtr(`
+		collection.UpdateRule = types.Pointer[string](`
 			@request.auth.id != '' &&
 			user = @request.auth.id &&
 			(@request.body.user:isset = false || @request.body.user = @request.auth.id)

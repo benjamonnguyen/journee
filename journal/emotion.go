@@ -11,6 +11,7 @@ const (
 	EmotionSad
 	EmotionGrumpy
 	EmotionNeutral
+	EmotionHopeful
 	EmotionHappy
 	EmotionJoyous
 	EmotionEstatic
@@ -19,44 +20,59 @@ const (
 var emotionOptions = []emotionOption{
 	{
 		ID:    EmotionAngry,
-		Emoji: "😡",
+		Name:  "Angry",
+		Emoji: "😠",
 	},
 	{
 		ID:    EmotionAnxious,
-		Emoji: "😰",
+		Name:  "Anxious",
+		Emoji: "😖",
 	},
 	{
 		ID:    EmotionDepressed,
+		Name:  "Depressed",
 		Emoji: "😞",
 	},
 	{
 		ID:    EmotionSad,
+		Name:  "Sad",
 		Emoji: "😔",
 	},
 	{
 		ID:    EmotionGrumpy,
+		Name:  "Grumpy",
 		Emoji: "😒",
 	},
 	{
 		ID:    EmotionNeutral,
+		Name:  "Neutral",
 		Emoji: "😑",
 	},
 	{
+		ID:    EmotionHopeful,
+		Name:  "Hopeful",
+		Emoji: "😌",
+	},
+	{
 		ID:    EmotionHappy,
+		Name:  "Happy",
 		Emoji: "🙂",
 	},
 	{
 		ID:    EmotionJoyous,
+		Name:  "Joyous",
 		Emoji: "😄",
 	},
 	{
 		ID:    EmotionEstatic,
+		Name:  "Estatic",
 		Emoji: "🤩",
 	},
 }
 
 type emotionOption struct {
 	ID    EmotionID
+	Name  string
 	Emoji string
 }
 

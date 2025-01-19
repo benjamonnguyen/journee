@@ -1,12 +1,12 @@
 <style>
-        #journal-textarea {
+        #journal-content-container {
             margin-bottom: 15px;
         }
-        #journal-textarea input {
+        #journal-content {
             font-size:12pt;
             resize: none;
             width: 100%;
-            height: 20vh;
+            height: 40vh;
         }
         #form-footer {
             display: flex;
@@ -33,11 +33,11 @@
             form: {
                 Date: new Date().toLocaleDateString(&#39;en-CA&#39;),
                 Content: &#39;&#39;,
-                EnergyLevel: null,
+                EnergyLevel: -1,
                 EmotionID: 0,
             },
             status: &#39;&#39;,
-        }"><form @submit.prevent="onSubmit"><input type="date" name="date" x-model="form.Date"><div id="journal-textarea"><textarea name="content" x-model="form.Content" autofocus></textarea></div><style>
+        }"><form @submit.prevent="onSubmit"><input type="date" name="date" x-model="form.Date"><div id="journal-content-container"><textarea id="journal-content" name="content" x-model="form.Content" autofocus></textarea></div><style>
         input[type="range"] {
             width: 100%;
             height: 6px;
@@ -119,8 +119,10 @@
 
         // Initial update
         updateSliderThumb((slider.min + slider.max)/2);
-    </script><fieldset id="emotion-selection" required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" x-model="form.EmotionID" name="emotion-selection"> <label for="1">😡</label></div><div><input type="radio" id="2" value="2" x-model="form.EmotionID" name="emotion-selection"> <label for="2">😰</label></div><div><input type="radio" id="3" value="3" x-model="form.EmotionID" name="emotion-selection"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" x-model="form.EmotionID" name="emotion-selection"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" x-model="form.EmotionID" name="emotion-selection"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" x-model="form.EmotionID" name="emotion-selection"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" x-model="form.EmotionID" name="emotion-selection"> <label for="7">🙂</label></div><div><input type="radio" id="8" value="8" x-model="form.EmotionID" name="emotion-selection"> <label for="8">😄</label></div><div><input type="radio" id="9" value="9" x-model="form.EmotionID" name="emotion-selection"> <label for="9">🤩</label></div></fieldset><div id="form-footer"><button type="submit">Save</button> <span id="status" x-text="status" x-show="status"></span></div></form></div><script>
+    </script><fieldset id="emotion-selection" required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" x-model="form.EmotionID" name="emotion-selection" aria-label="Angry"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" x-model="form.EmotionID" name="emotion-selection" aria-label="Anxious"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" x-model="form.EmotionID" name="emotion-selection" aria-label="Depressed"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" x-model="form.EmotionID" name="emotion-selection" aria-label="Sad"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" x-model="form.EmotionID" name="emotion-selection" aria-label="Grumpy"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" x-model="form.EmotionID" name="emotion-selection" aria-label="Neutral"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" x-model="form.EmotionID" name="emotion-selection" aria-label="Hopeful"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" x-model="form.EmotionID" name="emotion-selection" aria-label="Happy"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" x-model="form.EmotionID" name="emotion-selection" aria-label="Joyous"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" x-model="form.EmotionID" name="emotion-selection" aria-label="Estatic"> <label for="10">🤩</label></div></fieldset><div id="form-footer"><button type="submit">Save</button> <span id="status" x-text="status" x-show="status"></span></div></form></div><script>
         async function onSubmit() {
+            this.form.EnergyLevel = parseInt(this.form.EnergyLevel);
+            this.form.EmotionID = parseInt(this.form.EmotionID);
             const response = await fetch("/api/journal", {
                 method: "POST",
                 body: JSON.stringify(this.form),
