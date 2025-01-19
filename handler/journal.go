@@ -45,3 +45,22 @@ func UpsertJournal(e *core.RequestEvent) error {
 
 	return nil
 }
+
+func GetJournal(e *core.RequestEvent) error {
+	date := e.Request.PathValue("date")
+	record, _ := e.App.FindFirstRecordByFilter(
+		"journals",
+		"date = {:date} &&  user = {:user}",
+		dbx.Params{"date": date, "user": e.Auth.Id},
+	)
+	if record == nil {
+		return e.NotFoundError("", nil)
+	}
+
+	return e.JSON(200, journal.GetJournalResponse{
+		Date:        date,
+		Content:     record.GetString("content"),
+		EmotionID:   journal.EmotionID(record.GetInt("emotion_id")),
+		EnergyLevel: record.GetInt("energy_level"),
+	})
+}

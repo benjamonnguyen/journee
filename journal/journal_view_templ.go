@@ -56,6 +56,16 @@ func JournalView() templ.Component {
         button[type="submit"] {
             padding: 0.5rem 1.2rem;
             font-size: medium;
+            border-radius: 5px;
+            color: var(--grey-200);
+        }
+        button:not([disabled]) {
+            color: white;
+            background-color: var(--blue-primary);
+            border-color: transparent;
+        }
+        button:not([disabled]):hover {
+            background-color: var(--blue-secondary);
         }
         #status {
             margin-top: 1.5rem;
@@ -67,7 +77,7 @@ func JournalView() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</style><div id=\"app\" x-data=\"{\n            form: {\n                Date: new Date().toLocaleDateString(&#39;en-CA&#39;),\n                Content: &#39;&#39;,\n                EnergyLevel: -1,\n                EmotionID: 0,\n            },\n            status: &#39;&#39;,\n        }\"><form @submit.prevent=\"onSubmit\"><input type=\"date\" name=\"date\" x-model=\"form.Date\"><div id=\"journal-content-container\"><textarea id=\"journal-content\" name=\"content\" x-model=\"form.Content\" autofocus></textarea></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</style><div id=\"app\" x-data=\"{\n            form: {\n                Date: new Date().toLocaleDateString(&#39;en-CA&#39;),\n                Content: &#39;&#39;,\n                EnergyLevel: -1,\n                EmotionID: 0,\n            },\n            clearForm() {\n                this.form.Content = &#39;&#39;;\n                this.form.EnergyLevel = -1;\n                this.form.EmotionID = 0;\n            },\n            status: &#39;&#39;,\n        }\"><form @submit.prevent=\"onSubmit\" @input=\"if ($event.target.type != &#39;date&#39;) status = &#39;Unsaved changes&#39;\"><input type=\"date\" name=\"date\" x-model=\"form.Date\" @change=\"onDateChange\" x-init=\"onDateChange\"><div id=\"journal-content-container\"><textarea id=\"journal-content\" name=\"content\" x-model=\"form.Content\" autofocus></textarea></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -79,7 +89,7 @@ func JournalView() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"form-footer\"><button type=\"submit\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"form-footer\"><button type=\"submit\" :disabled=\"status != &#39;Unsaved changes&#39;\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -94,6 +104,9 @@ func JournalView() templ.Component {
 		}
 		templ_7745c5c3_Var4 := `
         async function onSubmit() {
+            const timeout = setTimeout(() => {
+                this.status = "Saving...";
+            }, 500);
             this.form.EnergyLevel = parseInt(this.form.EnergyLevel);
             this.form.EmotionID = parseInt(this.form.EmotionID);
             const response = await fetch("/api/journal", {
@@ -103,11 +116,32 @@ func JournalView() templ.Component {
                     "Content-Type": "application/json",
                 },
             });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+
+            clearTimeout(timeout);
             if (!response.ok) {
                 this.status = (await response.json()).message;
             } else {
                 this.status = "Synchronized";
             }
+        }
+
+        async function onDateChange() {
+            const timeout = setTimeout(() => {
+                this.status = "Loading...";
+            }, 500);
+            const resp = await fetch("/api/journal/"+this.form.Date);
+            if (resp.ok) {
+                this.form = await resp.json();
+            } else {
+                this.clearForm()
+            }
+            clearTimeout(timeout);
+            this.status = "Synchronized";
         }
     `
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var4)
@@ -286,7 +320,7 @@ func energySlider(min, max int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</legend> <input type=\"range\" id=\"energy-slider\" name=\"energy-level\" x-model=\"form.EnergyLevel\" min=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</legend> <input type=\"range\" id=\"energy-slider\" name=\"energy-level\" x-model=\"form.EnergyLevel\" x-init=\"$watch(&#39;form.EnergyLevel&#39;, () =&gt; updateDisplay(form.EnergyLevel == -1))\" min=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -346,8 +380,14 @@ func energySlider(min, max int) templ.Component {
             sliderThumb.style.left = ` + "`" + `${thumbPosition}px` + "`" + `;
         }
 
-        function updateDisplay() {
+        function updateDisplay(reset = false) {
             const value = slider.value;
+            if (reset) {
+                valueDisplay.textContent = "What was your energy level when you woke up?";
+                sliderThumb.textContent = "⚪";
+                updateSliderThumb((slider.min + slider.max)/2)
+                return;
+            }
             valueDisplay.textContent = "Energy level: " + value + "%";
             sliderThumb.textContent = getEmoji(value);
             updateSliderThumb();
@@ -357,7 +397,7 @@ func energySlider(min, max int) templ.Component {
         window.addEventListener('resize', updateSliderThumb);
 
         // Initial update
-        updateSliderThumb((slider.min + slider.max)/2);
+        updateDisplay();
     `
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
 		if templ_7745c5c3_Err != nil {

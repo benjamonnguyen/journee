@@ -6,3 +6,10 @@ type UpsertJournalRequest struct {
 	EmotionID   EmotionID
 	EnergyLevel *int
 }
+
+type GetJournalResponse struct {
+	Date        string
+	Content     string
+	EmotionID   EmotionID
+	EnergyLevel int
+}

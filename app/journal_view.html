@@ -23,6 +23,16 @@
         button[type="submit"] {
             padding: 0.5rem 1.2rem;
             font-size: medium;
+            border-radius: 5px;
+            color: var(--grey-200);
+        }
+        button:not([disabled]) {
+            color: white;
+            background-color: var(--blue-primary);
+            border-color: transparent;
+        }
+        button:not([disabled]):hover {
+            background-color: var(--blue-secondary);
         }
         #status {
             margin-top: 1.5rem;
@@ -36,8 +46,13 @@
                 EnergyLevel: -1,
                 EmotionID: 0,
             },
+            clearForm() {
+                this.form.Content = &#39;&#39;;
+                this.form.EnergyLevel = -1;
+                this.form.EmotionID = 0;
+            },
             status: &#39;&#39;,
-        }"><form @submit.prevent="onSubmit"><input type="date" name="date" x-model="form.Date"><div id="journal-content-container"><textarea id="journal-content" name="content" x-model="form.Content" autofocus></textarea></div><style>
+        }"><form @submit.prevent="onSubmit" @input="if ($event.target.type != &#39;date&#39;) status = &#39;Unsaved changes&#39;"><input type="date" name="date" x-model="form.Date" @change="onDateChange" x-init="onDateChange"><div id="journal-content-container"><textarea id="journal-content" name="content" x-model="form.Content" autofocus></textarea></div><style>
         input[type="range"] {
             width: 100%;
             height: 6px;
@@ -83,7 +98,7 @@
             pointer-events: none;
             user-select: none;
         }
-    </style><div id="energy-slider-container"><div style="position: relative;"><legend id="value-display">What was your energy level when you woke up?</legend> <input type="range" id="energy-slider" name="energy-level" x-model="form.EnergyLevel" min="0" max="100"><div id="slider-thumb">⚪</div></div></div><script id="energy-thresholds" type="application/json">[{"ID":1,"Emoji":"💀","Threshold":11},{"ID":2,"Emoji":"😴","Threshold":22},{"ID":3,"Emoji":"🥱","Threshold":33},{"ID":4,"Emoji":"😩","Threshold":44},{"ID":5,"Emoji":"😑","Threshold":55},{"ID":6,"Emoji":"😌","Threshold":66},{"ID":7,"Emoji":"🙂","Threshold":77},{"ID":8,"Emoji":"😊","Threshold":88},{"ID":9,"Emoji":"🤩","Threshold":100}]
+    </style><div id="energy-slider-container"><div style="position: relative;"><legend id="value-display">What was your energy level when you woke up?</legend> <input type="range" id="energy-slider" name="energy-level" x-model="form.EnergyLevel" x-init="$watch(&#39;form.EnergyLevel&#39;, () =&gt; updateDisplay(form.EnergyLevel == -1))" min="0" max="100"><div id="slider-thumb">⚪</div></div></div><script id="energy-thresholds" type="application/json">[{"ID":1,"Emoji":"💀","Threshold":11},{"ID":2,"Emoji":"😴","Threshold":22},{"ID":3,"Emoji":"🥱","Threshold":33},{"ID":4,"Emoji":"😩","Threshold":44},{"ID":5,"Emoji":"😑","Threshold":55},{"ID":6,"Emoji":"😌","Threshold":66},{"ID":7,"Emoji":"🙂","Threshold":77},{"ID":8,"Emoji":"😊","Threshold":88},{"ID":9,"Emoji":"🤩","Threshold":100}]
 </script><script>
         const slider = document.getElementById('energy-slider');
         const sliderThumb = document.getElementById('slider-thumb');
@@ -107,8 +122,14 @@
             sliderThumb.style.left = `${thumbPosition}px`;
         }
 
-        function updateDisplay() {
+        function updateDisplay(reset = false) {
             const value = slider.value;
+            if (reset) {
+                valueDisplay.textContent = "What was your energy level when you woke up?";
+                sliderThumb.textContent = "⚪";
+                updateSliderThumb((slider.min + slider.max)/2)
+                return;
+            }
             valueDisplay.textContent = "Energy level: " + value + "%";
             sliderThumb.textContent = getEmoji(value);
             updateSliderThumb();
@@ -118,9 +139,12 @@
         window.addEventListener('resize', updateSliderThumb);
 
         // Initial update
-        updateSliderThumb((slider.min + slider.max)/2);
-    </script><fieldset id="emotion-selection" required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" x-model="form.EmotionID" name="emotion-selection" aria-label="Angry"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" x-model="form.EmotionID" name="emotion-selection" aria-label="Anxious"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" x-model="form.EmotionID" name="emotion-selection" aria-label="Depressed"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" x-model="form.EmotionID" name="emotion-selection" aria-label="Sad"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" x-model="form.EmotionID" name="emotion-selection" aria-label="Grumpy"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" x-model="form.EmotionID" name="emotion-selection" aria-label="Neutral"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" x-model="form.EmotionID" name="emotion-selection" aria-label="Hopeful"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" x-model="form.EmotionID" name="emotion-selection" aria-label="Happy"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" x-model="form.EmotionID" name="emotion-selection" aria-label="Joyous"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" x-model="form.EmotionID" name="emotion-selection" aria-label="Estatic"> <label for="10">🤩</label></div></fieldset><div id="form-footer"><button type="submit">Save</button> <span id="status" x-text="status" x-show="status"></span></div></form></div><script>
+        updateDisplay();
+    </script><fieldset id="emotion-selection" required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" x-model="form.EmotionID" name="emotion-selection" aria-label="Angry"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" x-model="form.EmotionID" name="emotion-selection" aria-label="Anxious"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" x-model="form.EmotionID" name="emotion-selection" aria-label="Depressed"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" x-model="form.EmotionID" name="emotion-selection" aria-label="Sad"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" x-model="form.EmotionID" name="emotion-selection" aria-label="Grumpy"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" x-model="form.EmotionID" name="emotion-selection" aria-label="Neutral"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" x-model="form.EmotionID" name="emotion-selection" aria-label="Hopeful"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" x-model="form.EmotionID" name="emotion-selection" aria-label="Happy"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" x-model="form.EmotionID" name="emotion-selection" aria-label="Joyous"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" x-model="form.EmotionID" name="emotion-selection" aria-label="Estatic"> <label for="10">🤩</label></div></fieldset><div id="form-footer"><button type="submit" :disabled="status != &#39;Unsaved changes&#39;">Save</button> <span id="status" x-text="status" x-show="status"></span></div></form></div><script>
         async function onSubmit() {
+            const timeout = setTimeout(() => {
+                this.status = "Saving...";
+            }, 500);
             this.form.EnergyLevel = parseInt(this.form.EnergyLevel);
             this.form.EmotionID = parseInt(this.form.EmotionID);
             const response = await fetch("/api/journal", {
@@ -130,10 +154,31 @@
                     "Content-Type": "application/json",
                 },
             });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+
+            clearTimeout(timeout);
             if (!response.ok) {
                 this.status = (await response.json()).message;
             } else {
                 this.status = "Synchronized";
             }
+        }
+
+        async function onDateChange() {
+            const timeout = setTimeout(() => {
+                this.status = "Loading...";
+            }, 500);
+            const resp = await fetch("/api/journal/"+this.form.Date);
+            if (resp.ok) {
+                this.form = await resp.json();
+            } else {
+                this.clearForm()
+            }
+            clearTimeout(timeout);
+            this.status = "Synchronized";
         }
     </script>
