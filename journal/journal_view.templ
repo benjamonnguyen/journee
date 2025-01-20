@@ -6,6 +6,9 @@ import (
 
 templ JournalView() {
     <style>
+        form {
+            height: 80vh;
+        }
         #journal-content-container {
             margin-bottom: 15px;
         }
@@ -13,7 +16,8 @@ templ JournalView() {
             font-size:12pt;
             resize: none;
             width: 100%;
-            height: 40vh;
+            min-height: 20vh;
+            max-height: 20%;
         }
         #form-footer {
             display: flex;
