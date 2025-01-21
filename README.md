@@ -10,26 +10,27 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 ## Features
 - [x] Track emotions and energy levels
 - [~] Set and reflect on goals, screentime, etc
-  - "I would like to [spend more time/spend less time/build a habit/break a habit/etc]"
+  - "I would like to [spend more time/spend less time/build a habit/break a habit/reflect on/etc]"
 - [ ] Visualize your journey on the dashboard
+  - searchable word cloud timeline
 - [ ] Share one reflection, excerpt, achievement, etc each day
 
 ## Parking lot
 - Markdown support
+- Basic client-side LRU cache for journal data
+- Local capable journal textarea persisted to local storage
 - Quotes API
 - Daily checkins via Discord integration?
 - LLM integration for memories?
 
 ## TODO
-- [x] More date input margin-bottom
-- [ ] Encrypt journal content with server-side key
-- [D] Impl cursor to go to next/prev date with content
-- [ ] put slider/emotion selection in div with vh height
-- [ ] Impl basic client-side LRU cache for journal data
-- [A] Impl logout
-- [ ] Impl signup
+- [D] Encrypt journal content with server-side key
+- [A] Impl cursor to go to next/prev date with content
+- [ ] On get persist hash clientside, on update check hash against server data to resolve conflicts
 
-- [ ] Impl forgot password?
+
+- Impl signup
+- Impl forgot password?
 - [ ] .air.toml
 
 ## Before Production

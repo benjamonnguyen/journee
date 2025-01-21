@@ -22,7 +22,7 @@ var energyThresholds = []energyThreshold{
 	},
 	{
 		ID:        DozingOff,
-		Emoji:     "😴",
+		Emoji:     "😪",
 		Threshold: 22,
 	},
 	{
@@ -32,7 +32,7 @@ var energyThresholds = []energyThreshold{
 	},
 	{
 		ID:        Tired,
-		Emoji:     "😩",
+		Emoji:     "😮‍💨",
 		Threshold: 44,
 	},
 	{
