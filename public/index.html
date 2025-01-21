@@ -17,15 +17,15 @@
         }
 
         fieldset {
-          display: flex;
-          padding: 10px;
-          width: fit-content;
-          margin-bottom: 5px;
+            display: flex;
+            padding: 10px;
+            width: fit-content;
+            margin-bottom: 5px;
         }
-        
+
         fieldset label {
-          display: inline-block;
-          margin-right: 10px;
+            display: inline-block;
+            margin-right: 10px;
         }
 
         textarea {
@@ -34,30 +34,28 @@
             padding: 10px;
             box-sizing: border-box;
         }
-         
+
         button {
             padding: 2px 4px;
         }
-      </style>
+    </style>
 
-    <body x-data
-    @keyup.s="
+    <body x-data @keyup.s="
     if ($event.ctrlKey) {
         $event.preventDefault();
         document.querySelector('button[type=\'submit\']')?.click();
-    }"
-    @keyup.e="
+    }" @keyup.e="
     if ($event.ctrlKey) {
         $event.preventDefault();
         document.querySelector('#journal-content')?.focus();
-    }"
-    >
+    }">
         <navbar>
             <h1 class="logo">journee</h1>
             <div>
-                <a href="#">Log out</a>
+                <a href="/logout">Log out</a>
             </div>
         </navbar>
         <main hx-trigger="load" hx-get="/app" hx-swap="innerHTML"></main>
     </body>
+
 </html>

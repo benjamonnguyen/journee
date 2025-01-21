@@ -21,11 +21,15 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 - LLM integration for memories?
 
 ## TODO
-- [ ] More date input margin-bottom
+- [x] More date input margin-bottom
 - [ ] Encrypt journal content with server-side key
-- [ ] Impl cursor to go to next/prev date with content
+- [D] Impl cursor to go to next/prev date with content
 - [ ] put slider/emotion selection in div with vh height
 - [ ] Impl basic client-side LRU cache for journal data
+- [A] Impl logout
+- [ ] Impl signup
+
+- [ ] Impl forgot password?
 - [ ] .air.toml
 
 ## Before Production

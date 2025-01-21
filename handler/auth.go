@@ -61,9 +61,23 @@ func Login(e *core.RequestEvent) error {
 	e.SetCookie(&http.Cookie{
 		Name:  "Authorization",
 		Value: token,
-		// Secure: true,
+		// TOOD Secure: true,
 		HttpOnly: true,
 	})
 
+	e.SetCookie(&http.Cookie{
+		Name:  "user_email",
+		Value: form.Email,
+	})
+
 	return nil
+}
+
+func Logout(e *core.RequestEvent) error {
+	e.SetCookie(&http.Cookie{
+		Name:  "Authorization",
+		Value: "",
+	})
+
+	return e.Redirect(http.StatusTemporaryRedirect, "/login")
 }

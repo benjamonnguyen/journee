@@ -111,7 +111,8 @@
 
     <body>
         <main>
-            <div class="login-container" x-data="{ form: { Email: '', Password: '' }, status: '' }">
+            <div class="login-container" x-data="{ form: { Email: '', Password: '' }, status: '' }"
+                x-init="autofillEmail">
                 <div class="login-header">
                     <h1 class="logo">journee</h1>
                 </div>
@@ -150,6 +151,15 @@
                 this.status = (await resp.json()).message;
             } else {
                 window.location.href = "/";
+            }
+        }
+
+        function autofillEmail() {
+            const cookies = document.cookie.split(";");
+            const userEmailCookie = cookies.find(c => c.startsWith("user_email="));
+            if (userEmailCookie) {
+                this.form.Email = userEmailCookie.split("=")[1];
+                document.querySelector("input[type='password']")?.focus();
             }
         }
     </script>

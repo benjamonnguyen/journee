@@ -1,8 +1,9 @@
 services:
   journee:
-    image: magpie:5000/journee
+    container_name: journee
+    image: journee
     restart: unless-stopped
     ports:
-        - 8080:8080
+       - 8080:8080
     volumes:
-        - "./pb_data:/pb_data"
+        - /mnt/stacks/journee/pb_data:/pb_data

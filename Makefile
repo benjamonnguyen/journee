@@ -4,3 +4,7 @@ watch:
 	templ generate --watch
 serve:
 	go run ./cmd/app serve
+
+# PROD
+build:
+	make gen && docker build --platform linux/amd64 -t journee .

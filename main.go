@@ -31,6 +31,8 @@ func main() {
 
 		se.Router.POST("/login", handler.Login)
 
+		se.Router.GET("/logout", handler.Logout)
+
 		// app
 		se.Router.GET("/app", App).
 			BindFunc(handler.AuthMiddleware)
