@@ -11,35 +11,6 @@
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
 
-    <style>
-        body {
-            margin: 10px;
-        }
-
-        fieldset {
-            display: flex;
-            padding: 10px;
-            width: fit-content;
-            margin-bottom: 5px;
-        }
-
-        fieldset label {
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        textarea {
-            height: 25rem;
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 2px 4px;
-        }
-    </style>
-
     <body x-data @keyup.s="
     if ($event.ctrlKey) {
         $event.preventDefault();
@@ -58,5 +29,14 @@
         <main hx-trigger="load" hx-get="/app" hx-swap="innerHTML"></main>
         <footer></footer>
     </body>
+
+    <script>
+        document.body.addEventListener('htmx:afterSwap', function (event) {
+            // If the swapped content contains Alpine directives, initialize them
+            if (event.detail.target.querySelector('[x-data]')) {
+                Alpine.initTree(event.detail.target);
+            }
+        });
+    </script>
 
 </html>

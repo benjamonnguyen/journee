@@ -3,12 +3,21 @@
     color: var(--grey-800);
 }
 
+body {
+    margin: 10px;
+    overflow-x: hidden;
+}
+
 navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 0.5rem;
     height: 10vh;
+}
+
+button {
+    padding: 2px 4px;
 }
 
 main {

@@ -1,24 +1,33 @@
 package handler
 
 import (
+	"strconv"
+	"time"
+
 	"benjinguyen.me/journee/journal"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 func UpsertJournal(e *core.RequestEvent) error {
-	var request journal.UpsertJournalRequest
-	if err := e.BindBody(&request); err != nil {
+	var body string
+	if err := e.BindBody(&body); err != nil {
 		return e.BadRequestError("", err)
 	}
-	e.App.Logger().Debug("upserting journal", "request", request)
+	date := e.Request.PathValue("date")
+	e.App.Logger().Debug("upserting journal", "body", body, "date", date)
+
+	if _, err := time.Parse(time.DateOnly, date); err != nil {
+		return e.BadRequestError("invalid date argument", err)
+	}
 
 	record, _ := e.App.FindFirstRecordByFilter(
 		"journals",
 		"date = {:date} &&  user = {:user}",
-		dbx.Params{"date": request.Date, "user": e.Auth.Id},
+		dbx.Params{"date": date, "user": e.Auth.Id},
 	)
 
+	// create
 	if record == nil {
 		collection, err := e.App.FindCollectionByNameOrId("journals")
 		if err != nil {
@@ -26,18 +35,31 @@ func UpsertJournal(e *core.RequestEvent) error {
 		}
 
 		record = core.NewRecord(collection)
-		record.Set("date", request.Date)
+		record.Set("date", date)
 		record.Set("user", e.Auth.Id)
 	}
 
 	// update
-	record.Set("content", request.Content)
-	record.Set("emotion_id", int(request.EmotionID))
-	if request.EnergyLevel == nil {
-		record.Set("energy_level", -1)
-	} else {
-		record.Set("energy_level", *request.EnergyLevel)
+	el := e.Request.PathValue("el")
+	switch el {
+	case "content":
+		record.Set(el, body)
+	case "energyLevel":
+		n, err := strconv.Atoi(body)
+		if err != nil {
+			return e.BadRequestError("", err)
+		}
+		record.Set(el, n)
+	case "emotionID":
+		n, err := strconv.Atoi(body)
+		if err != nil {
+			return e.BadRequestError("", err)
+		}
+		record.Set(el, n)
+	default:
+		return e.BadRequestError("invalid form element: "+el, nil)
 	}
+
 	e.App.Logger().Debug("saving journal record", "record", record)
 	if err := e.App.Save(record); err != nil {
 		return err

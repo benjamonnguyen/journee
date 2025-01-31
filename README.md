@@ -18,7 +18,7 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 ## Parking lot
 - Markdown support
 - Basic client-side LRU cache for journal data
-- Local capable journal textarea persisted to local storage
+
 - Quotes API
 - Daily checkins via Discord integration?
 - LLM integration for memories?
@@ -26,8 +26,11 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 ## TODO
 - [D] Encrypt journal content with server-side key
 - [A] Impl cursor to go to next/prev date with content
+- [A] Autosave 
+- [ ] Use datepicker lib for customizability
+- [B] Prevent going into the future (max date)
 - [ ] On get persist hash clientside, on update check hash against server data to resolve conflicts
-
+- [ ] Local capable journal textarea persisted to local storage
 
 - Impl signup
 - Impl forgot password?
