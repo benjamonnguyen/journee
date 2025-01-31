@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"io"
 	"strconv"
 	"time"
 
@@ -10,10 +11,12 @@ import (
 )
 
 func UpsertJournal(e *core.RequestEvent) error {
-	var body string
-	if err := e.BindBody(&body); err != nil {
+	data, err := io.ReadAll(e.Request.Body)
+	if err != nil {
 		return e.BadRequestError("", err)
 	}
+	defer e.Request.Body.Close()
+	body := string(data)
 	date := e.Request.PathValue("date")
 	e.App.Logger().Debug("upserting journal", "body", body, "date", date)
 
@@ -40,24 +43,24 @@ func UpsertJournal(e *core.RequestEvent) error {
 	}
 
 	// update
-	el := e.Request.PathValue("el")
-	switch el {
+	field := e.Request.PathValue("field")
+	switch field {
 	case "content":
-		record.Set(el, body)
-	case "energyLevel":
+		record.Set(field, body)
+	case "energy_level":
 		n, err := strconv.Atoi(body)
 		if err != nil {
 			return e.BadRequestError("", err)
 		}
-		record.Set(el, n)
-	case "emotionID":
+		record.Set(field, n)
+	case "emotion_id":
 		n, err := strconv.Atoi(body)
 		if err != nil {
 			return e.BadRequestError("", err)
 		}
-		record.Set(el, n)
+		record.Set(field, n)
 	default:
-		return e.BadRequestError("invalid form element: "+el, nil)
+		return e.BadRequestError("invalid field: "+field, nil)
 	}
 
 	e.App.Logger().Debug("saving journal record", "record", record)

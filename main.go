@@ -37,7 +37,7 @@ func main() {
 		se.Router.GET("/app", App).
 			BindFunc(handler.AuthMiddleware)
 
-		se.Router.POST("/api/journal/{date}/{el}", handler.UpsertJournal).
+		se.Router.POST("/api/journal/{date}/{field}", handler.UpsertJournal).
 			BindFunc(handler.AuthMiddleware)
 
 		se.Router.GET("/api/journal/{date}", handler.GetJournal).

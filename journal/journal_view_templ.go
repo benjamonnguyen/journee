@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "fmt"
 
+// TODO better design. dispatch status event to status element to maintain LOB
 func JournalView() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -31,7 +32,19 @@ func JournalView() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<style>\n        input[name=\"date\"] {\n            margin-bottom: 2px;\n        }\n        #journal-content-container {\n            margin-bottom: 15px;\n        }\n        #journal-content {\n            font-size:12pt;\n            resize: none;\n            width: 100%;\n            height: 20vh;\n            padding: 10px;\n            box-sizing: border-box;\n        }\n        #form-footer {\n            display: flex;\n            align-items: center;\n            flex-direction: column;\n            width: 100%;\n            margin-top: 1.5rem;\n        }\n        #energy-slider-container {\n            margin-bottom: 1.5rem;\n        }\n        #emotion-selection-container {\n            margin-bottom: 1.5rem;\n        }\n        button[type=\"submit\"] {\n            padding: 0.5rem 1.2rem;\n            font-size: medium;\n            border-radius: 5px;\n            color: var(--grey-200);\n        }\n        button:not([disabled]) {\n            color: white;\n            background-color: var(--blue-primary);\n            border-color: transparent;\n        }\n        button:not([disabled]):hover {\n            background-color: var(--blue-secondary);\n        }\n        #status {\n            color: var(--grey-800);\n            font-size: small;\n        }\n        #status.status-err {\n            color: var(--red-primary);\n        }\n    </style><div id=\"app\" x-data=\"{\n            status: {\n                msg: &#39;Synchronized&#39;,\n                cls: &#39;&#39;,\n            },\n        }\"><form id=\"journal-form\"><input type=\"date\" name=\"date\" @change=\"status.msg = &#39;Loading...&#39;; status = await onDateChange()\" x-init=\"$el.value = new Date().toLocaleDateString(&#39;en-CA&#39;); status = onDateChange();\"><div id=\"journal-content-container\"><textarea id=\"journal-content\" name=\"content\" autofocus @input.throttle.1000ms=\"updateJournal(&#39;content&#39;)\"></textarea></div><div id=\"form-footer\"><span id=\"status\" x-text=\"status.msg\" :class=\"status.cls\"></span></div></form></div><script>\n        const formEl = document.querySelector(\"#journal-form\");\n        const dateEl = document.querySelector(\"#journal-form input[type='date']\");\n        const contentEl = document.querySelector(\"#journal-content\");\n        const energySlider = document.querySelector(\"#energy-slider-container\");\n\n        /**\n        * @typedef {Object} JournalData\n        * @property {string} date\n        * @property {string} content\n        * @property {number} emotionID\n        * @property {number} energyLevel\n        */\n\n        /**\n        * @typedef {Object} Status\n        * @property {string} msg\n        * @property {string} cls\n        */\n\n        async function updateJournal(el) {\n            const formData = new FormData(formEl);\n            const response = await fetch(`/api/journal/${formData.get(\"date\")}/${el}`, {\n                method: \"POST\",\n                body: formData.get(el),\n                headers: {\n                    \"Content-Type\": \"text/html\",\n                },\n            });\n\n            return await handleResponse(response);\n        }\n\n        /** @returns {Status} */\n        async function onDateChange() {\n            const resp = await fetch(\"/api/journal/\"+dateEl.value);\n\n            if (resp.status == 404) {\n                return { msg: resp.statusText, cls: \"status-err\" };\n            }\n\n            if (resp.ok) {\n                /** @type {JournalData} */\n                const journalData = await resp.json();\n                contentEl.value = journalData.content;\n            } else if (resp.status == 404) {\n                contentEl.value = '';\n                // this.form.EnergyLevel = 50;\n                // this.form.EmotionID = 0;\n            }\n            // document.querySelector(\"#energy-slider\").dispatchEvent(new CustomEvent(\"input\"));\n\n            return { msg: \"Synchronized\" };\n        }\n\n        /** @param {Response} response */\n        async function handleResponse(response) {\n            if (response.redirected) {\n                window.location.href = response.url;\n                return;\n            }\n\n            if (!response.ok) {\n                return { msg: (await response.json()).message, cls: 'status-err' };\n            } else {\n                return { msg: \"Synchronized\" };\n            }\n        }\n    </script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<style>\n        input[name=\"date\"] {\n            margin-bottom: 2px;\n        }\n        #journal-content-container {\n            margin-bottom: 15px;\n        }\n        #journal-content {\n            font-size:12pt;\n            resize: none;\n            width: 100%;\n            height: 20vh;\n            padding: 10px;\n            box-sizing: border-box;\n        }\n        #form-footer {\n            display: flex;\n            align-items: center;\n            flex-direction: column;\n            width: 100%;\n            margin-top: 1.5rem;\n        }\n        #energy-slider-container {\n            margin-bottom: 1.5rem;\n        }\n        #emotion-selection-container {\n            margin-bottom: 1.5rem;\n        }\n        button[type=\"submit\"] {\n            padding: 0.5rem 1.2rem;\n            font-size: medium;\n            border-radius: 5px;\n            color: var(--grey-200);\n        }\n        button:not([disabled]) {\n            color: white;\n            background-color: var(--blue-primary);\n            border-color: transparent;\n        }\n        button:not([disabled]):hover {\n            background-color: var(--blue-secondary);\n        }\n        #status {\n            color: var(--grey-800);\n            font-size: small;\n        }\n        #status.status-err {\n            color: var(--red-primary);\n        }\n    </style><script>\n        const formEl = document.querySelector(\"#journal-form\");\n        const dateEl = document.querySelector(\"#journal-form input[type='date']\");\n        const contentInput = document.querySelector(\"#journal-content\");\n        const emotionInput = document.querySelector(\"input[name='emotion_id']\");\n        const energyLevelInput = document.querySelector(\"#energy-slider\");\n\n        /**\n        * @typedef {Object} JournalData\n        * @property {string} date\n        * @property {string} content\n        * @property {number} emotionID\n        * @property {number} energyLevel\n        */\n\n        /**\n        * @typedef {Object} Status\n        * @property {string} msg\n        * @property {string} cls\n        */\n\n        async function updateJournal(el) {\n            const formData = new FormData(formEl);\n            const response = await fetch(`/api/journal/${formData.get(\"date\")}/${el}`, {\n                method: \"POST\",\n                body: formData.get(el),\n            });\n\n            return await handleResponse(response);\n        }\n\n        /** @returns {Status} */\n        async function onDateChange() {\n            const resp = await fetch(\"/api/journal/\"+dateEl.value);\n\n            if (!resp.ok && resp.status != 404) {\n                return { msg: resp.statusText, cls: \"status-err\" };\n            }\n\n            if (resp.ok) {\n                /** @type {JournalData} */\n                const journalData = await resp.json();\n                contentInput.value = journalData.content;\n                emotionInput.value = journalData.emotionID;\n                setEnergyLevel(journalData.energyLevel);\n            } else {\n                contentInput.value = '';\n                emotionInput.value = 0;\n                resetEnergyLevel();\n            }\n\n            return { msg: \"Synchronized\" };\n        }\n\n        /** @param {Response} response */\n        async function handleResponse(response) {\n            if (response.redirected) {\n                window.location.href = response.url;\n                return;\n            }\n\n            if (!response.ok) {\n                return { msg: (await response.json()).message, cls: 'status-err' };\n            } else {\n                return { msg: \"Synchronized\" };\n            }\n        }\n    </script><div id=\"app\" x-data=\"{\n            status: {\n                msg: &#39;Synchronized&#39;,\n                cls: &#39;&#39;,\n            },\n        }\"><form id=\"journal-form\"><input type=\"date\" name=\"date\" @change=\"status.msg = &#39;Loading...&#39;; status = await onDateChange()\" x-init=\"$el.value = new Date().toLocaleDateString(&#39;en-CA&#39;); status = await onDateChange();\"><div id=\"journal-content-container\"><textarea id=\"journal-content\" name=\"content\" autofocus @input.throttle.1000ms=\"updateJournal(&#39;content&#39;)\"></textarea></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = energySlider(1, 100).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = emotionSelection().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div id=\"form-footer\"><span id=\"status\" x-text=\"status.msg\" :class=\"status.cls\"></span></div></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -60,82 +73,82 @@ func emotionSelection() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<style>\n        fieldset {\n            display: flex;\n            padding: 10px;\n            width: fit-content;\n            margin-bottom: 5px;\n        }\n\n        fieldset label {\n            display: inline-block;\n            margin-right: 10px;\n        }\n    </style><div class=\"emotion-selection-container\"><fieldset id=\"emotion-selection\" required><legend style=\"align: center; margin: 0 auto;\">How did you feel overall today?</legend> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<style>\n        fieldset {\n            display: flex;\n            padding: 10px;\n            width: fit-content;\n            margin-bottom: 5px;\n        }\n\n        fieldset label {\n            display: inline-block;\n            margin-right: 10px;\n        }\n    </style><div class=\"emotion-selection-container\"><fieldset required><legend style=\"align: center; margin: 0 auto;\">How did you feel overall today?</legend> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, opt := range emotionOptions {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div><input type=\"radio\" id=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div><input type=\"radio\" id=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(opt.getID())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 180, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 182, Col: 22}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(opt.getID())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 180, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 183, Col: 25}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" x-model=\"form.EmotionID\" name=\"emotion-selection\" aria-label=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\" name=\"emotion_id\" aria-label=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(opt.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 180, Col: 137}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 185, Col: 27}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"> <label for=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" @input=\"status = await updateJournal(&#39;emotion_id&#39;)\"> <label for=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(opt.getID())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 181, Col: 29}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 188, Col: 29}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(opt.Emoji)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 181, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 188, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</label></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</label></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</fieldset></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</fieldset></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -164,33 +177,33 @@ func energySlider(min, max int) templ.Component {
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<style>\n        input[type=\"range\"] {\n            width: 100%;\n            height: 6px;\n            -webkit-appearance: none;\n            background: #ddd;\n            border-radius: 4px;\n            outline: none;\n            margin-top: 20px;\n        }\n\n        /* Hide default thumb */\n        input[type=\"range\"]::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 30px;\n            height: 30px;\n            cursor: pointer;\n            background: transparent;\n            border: none;\n            position: relative;\n            outline: none;\n        }\n\n        input[type=\"range\"]::-moz-range-thumb {\n            width: 30px;\n            height: 30px;\n            cursor: pointer;\n            background: transparent;\n            border: none;\n            position: relative;\n            outline: none;\n        }\n\n        #energy-slider-container {\n            text-align: center;\n        }\n\n        #value-display {\n            font-size: 16px;\n        }\n\n        #slider-thumb {\n            position: absolute;\n            font-size: 22px;\n            transform: translateX(-50%) translateY(-75%);\n            pointer-events: none;\n            user-select: none;\n        }\n    </style><div id=\"energy-slider-container\"><div style=\"position: relative;\"><legend id=\"value-display\">What was your energy level when you woke up?</legend> <input type=\"range\" id=\"energy-slider\" name=\"energy-level\" x-model=\"form.EnergyLevel\" min=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<style>\n        input[type=\"range\"] {\n            width: 100%;\n            height: 6px;\n            -webkit-appearance: none;\n            background: #ddd;\n            border-radius: 4px;\n            outline: none;\n            margin-top: 20px;\n            cursor: pointer;\n        }\n\n        /* Hide default thumb */\n        input[type=\"range\"]::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 30px;\n            height: 30px;\n            background: transparent;\n            border: none;\n            position: relative;\n            outline: none;\n        }\n\n        input[type=\"range\"]::-moz-range-thumb {\n            width: 30px;\n            height: 30px;\n            background: transparent;\n            border: none;\n            position: relative;\n            outline: none;\n        }\n\n        #energy-slider-container {\n            text-align: center;\n        }\n\n        #value-display {\n            font-size: 16px;\n        }\n\n        #slider-thumb {\n            position: absolute;\n            font-size: 22px;\n            transform: translateX(-50%) translateY(-75%);\n            pointer-events: none;\n            user-select: none;\n        }\n    </style><div id=\"energy-slider-container\"><div style=\"position: relative;\"><legend id=\"value-display\">What was your energy level when you woke up?</legend> <input type=\"range\" id=\"energy-slider\" name=\"energy_level\" min=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", min))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 246, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 251, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" max=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" max=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", max))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 247, Col: 32}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `journal/journal_view.templ`, Line: 252, Col: 32}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" @input=\"updateDisplay\"><div id=\"slider-thumb\">⚪</div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" @input=\"setEnergyLevel($el.value)\" @input.debounce.500ms=\"status = await updateJournal(&#39;energy_level&#39;)\" x-init=\"resetEnergyLevel\"><div id=\"slider-thumb\">⚪</div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -198,7 +211,7 @@ func energySlider(min, max int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<script>\n        const slider = document.getElementById('energy-slider');\n        const sliderThumb = document.getElementById('slider-thumb');\n        const valueDisplay = document.getElementById('value-display');\n\n        const energyThresholds = JSON.parse(document.getElementById('energy-thresholds').textContent);\n\n        function getEmoji(value) {\n            if (this.form.EnergyLevel == -1) return \"⚪\";\n            for (let i = 0; i < energyThresholds.length; i++) {\n                if (value <= energyThresholds[i].Threshold) {\n                    return energyThresholds[i].Emoji;\n                }\n            }\n            return energyThresholds[-1].Emoji;\n        }\n\n        function updateSliderThumb() {\n            const value = (this.form.EnergyLevel == -1) ? 50 : slider.value;\n            const percent = (value - slider.min) / (slider.max - slider.min);\n            const thumbPosition = percent * (slider.offsetWidth);\n            sliderThumb.style.left = `${thumbPosition}px`;\n        }\n\n        function updateDisplay() {\n            const value = slider.value;\n            valueDisplay.textContent = (this.form.EnergyLevel != -1) ? \"Energy level: \" + value + \"%\" : \"What was your energy level when you woke up?\";\n            sliderThumb.textContent = getEmoji(value);\n            updateSliderThumb();\n        }\n\n        window.addEventListener('resize', updateSliderThumb);\n    </script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<script>\n        const slider = document.getElementById('energy-slider');\n        const sliderThumb = document.getElementById('slider-thumb');\n        const valueDisplay = document.getElementById('value-display');\n\n        const energyThresholds = JSON.parse(document.getElementById('energy-thresholds').textContent);\n\n        function getEmoji(value) {\n            for (let i = 0; i < energyThresholds.length; i++) {\n                if (value <= energyThresholds[i].Threshold) {\n                    return energyThresholds[i].Emoji;\n                }\n            }\n            return energyThresholds[-1].Emoji;\n        }\n\n        function updateSliderThumb() {\n            const percent = slider.value / slider.max;\n            const thumbPosition = percent * (slider.offsetWidth);\n            sliderThumb.style.left = `${thumbPosition}px`;\n        }\n\n        function resetEnergyLevel() {\n            slider.value = 50;\n            valueDisplay.textContent = \"What was your energy level when you woke up?\";\n            sliderThumb.textContent = \"⚪\";\n            updateSliderThumb();\n        }\n\n        function setEnergyLevel(n) {\n            slider.value = n;\n            valueDisplay.textContent = \"Energy level: \" + slider.value + \"%\";\n            sliderThumb.textContent = getEmoji(slider.value);\n            updateSliderThumb();\n        }\n\n        window.addEventListener('resize', updateSliderThumb);\n    </script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

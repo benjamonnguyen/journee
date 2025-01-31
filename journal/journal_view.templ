@@ -2,6 +2,7 @@ package journal
 
 import "fmt"
 
+// TODO better design. dispatch status event to status element to maintain LOB
 templ JournalView() {
 	<style>
         input[name="date"] {
@@ -53,44 +54,12 @@ templ JournalView() {
             color: var(--red-primary);
         }
     </style>
-	<div
-		id="app"
-		x-data="{
-            status: {
-                msg: 'Synchronized',
-                cls: '',
-            },
-        }"
-	>
-		<form
-			id="journal-form"
-		>
-			<input
-				type="date"
-				name="date"
-				@change="status.msg = 'Loading...'; status = await onDateChange()"
-				x-init="$el.value = new Date().toLocaleDateString('en-CA'); status = onDateChange();"
-			/>
-			<div id="journal-content-container">
-				<textarea
-					id="journal-content"
-					name="content"
-					autofocus
-					@input.throttle.1000ms="updateJournal('content')"
-				></textarea>
-			</div>
-			// @energySlider(0, 100)
-			// @emotionSelection()
-			<div id="form-footer">
-				<span id="status" x-text="status.msg" :class="status.cls"></span>
-			</div>
-		</form>
-	</div>
 	<script>
         const formEl = document.querySelector("#journal-form");
         const dateEl = document.querySelector("#journal-form input[type='date']");
-        const contentEl = document.querySelector("#journal-content");
-        const energySlider = document.querySelector("#energy-slider-container");
+        const contentInput = document.querySelector("#journal-content");
+        const emotionInput = document.querySelector("input[name='emotion_id']");
+        const energyLevelInput = document.querySelector("#energy-slider");
 
         /**
         * @typedef {Object} JournalData
@@ -111,9 +80,6 @@ templ JournalView() {
             const response = await fetch(`/api/journal/${formData.get("date")}/${el}`, {
                 method: "POST",
                 body: formData.get(el),
-                headers: {
-                    "Content-Type": "text/html",
-                },
             });
 
             return await handleResponse(response);
@@ -123,20 +89,21 @@ templ JournalView() {
         async function onDateChange() {
             const resp = await fetch("/api/journal/"+dateEl.value);
 
-            if (resp.status == 404) {
+            if (!resp.ok && resp.status != 404) {
                 return { msg: resp.statusText, cls: "status-err" };
             }
 
             if (resp.ok) {
                 /** @type {JournalData} */
                 const journalData = await resp.json();
-                contentEl.value = journalData.content;
-            } else if (resp.status == 404) {
-                contentEl.value = '';
-                // this.form.EnergyLevel = 50;
-                // this.form.EmotionID = 0;
+                contentInput.value = journalData.content;
+                emotionInput.value = journalData.emotionID;
+                setEnergyLevel(journalData.energyLevel);
+            } else {
+                contentInput.value = '';
+                emotionInput.value = 0;
+                resetEnergyLevel();
             }
-            // document.querySelector("#energy-slider").dispatchEvent(new CustomEvent("input"));
 
             return { msg: "Synchronized" };
         }
@@ -155,6 +122,39 @@ templ JournalView() {
             }
         }
     </script>
+	<div
+		id="app"
+		x-data="{
+            status: {
+                msg: 'Synchronized',
+                cls: '',
+            },
+        }"
+	>
+		<form
+			id="journal-form"
+		>
+			<input
+				type="date"
+				name="date"
+				@change="status.msg = 'Loading...'; status = await onDateChange()"
+				x-init="$el.value = new Date().toLocaleDateString('en-CA'); status = await onDateChange();"
+			/>
+			<div id="journal-content-container">
+				<textarea
+					id="journal-content"
+					name="content"
+					autofocus
+					@input.throttle.1000ms="updateJournal('content')"
+				></textarea>
+			</div>
+			@energySlider(1, 100)
+			@emotionSelection()
+			<div id="form-footer">
+				<span id="status" x-text="status.msg" :class="status.cls"></span>
+			</div>
+		</form>
+	</div>
 }
 
 templ emotionSelection() {
@@ -173,11 +173,18 @@ templ emotionSelection() {
         }
     </style>
 	<div class="emotion-selection-container">
-		<fieldset id="emotion-selection" required>
+		<fieldset required>
 			<legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend>
 			for _, opt := range emotionOptions {
 				<div>
-					<input type="radio" id={ opt.getID() } value={ opt.getID() } x-model="form.EmotionID" name="emotion-selection" aria-label={ opt.Name }/>
+					<input
+						type="radio"
+						id={ opt.getID() }
+						value={ opt.getID() }
+						name="emotion_id"
+						aria-label={ opt.Name }
+						@input="status = await updateJournal('emotion_id')"
+					/>
 					<label for={ opt.getID() }>{ opt.Emoji }</label>
 				</div>
 			}
@@ -195,6 +202,7 @@ templ energySlider(min, max int) {
             border-radius: 4px;
             outline: none;
             margin-top: 20px;
+            cursor: pointer;
         }
 
         /* Hide default thumb */
@@ -202,7 +210,6 @@ templ energySlider(min, max int) {
             -webkit-appearance: none;
             width: 30px;
             height: 30px;
-            cursor: pointer;
             background: transparent;
             border: none;
             position: relative;
@@ -212,7 +219,6 @@ templ energySlider(min, max int) {
         input[type="range"]::-moz-range-thumb {
             width: 30px;
             height: 30px;
-            cursor: pointer;
             background: transparent;
             border: none;
             position: relative;
@@ -241,11 +247,12 @@ templ energySlider(min, max int) {
 			<input
 				type="range"
 				id="energy-slider"
-				name="energy-level"
-				x-model="form.EnergyLevel"
+				name="energy_level"
 				min={ fmt.Sprintf("%d", min) }
 				max={ fmt.Sprintf("%d", max) }
-				@input="updateDisplay"
+				@input="setEnergyLevel($el.value)"
+				@input.debounce.500ms="status = await updateJournal('energy_level')"
+				x-init="resetEnergyLevel"
 			/>
 			<div id="slider-thumb">⚪</div>
 		</div>
@@ -259,7 +266,6 @@ templ energySlider(min, max int) {
         const energyThresholds = JSON.parse(document.getElementById('energy-thresholds').textContent);
 
         function getEmoji(value) {
-            if (this.form.EnergyLevel == -1) return "⚪";
             for (let i = 0; i < energyThresholds.length; i++) {
                 if (value <= energyThresholds[i].Threshold) {
                     return energyThresholds[i].Emoji;
@@ -269,16 +275,22 @@ templ energySlider(min, max int) {
         }
 
         function updateSliderThumb() {
-            const value = (this.form.EnergyLevel == -1) ? 50 : slider.value;
-            const percent = (value - slider.min) / (slider.max - slider.min);
+            const percent = slider.value / slider.max;
             const thumbPosition = percent * (slider.offsetWidth);
             sliderThumb.style.left = `${thumbPosition}px`;
         }
 
-        function updateDisplay() {
-            const value = slider.value;
-            valueDisplay.textContent = (this.form.EnergyLevel != -1) ? "Energy level: " + value + "%" : "What was your energy level when you woke up?";
-            sliderThumb.textContent = getEmoji(value);
+        function resetEnergyLevel() {
+            slider.value = 50;
+            valueDisplay.textContent = "What was your energy level when you woke up?";
+            sliderThumb.textContent = "⚪";
+            updateSliderThumb();
+        }
+
+        function setEnergyLevel(n) {
+            slider.value = n;
+            valueDisplay.textContent = "Energy level: " + slider.value + "%";
+            sliderThumb.textContent = getEmoji(slider.value);
             updateSliderThumb();
         }
 
