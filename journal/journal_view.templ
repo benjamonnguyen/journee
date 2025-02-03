@@ -5,8 +5,11 @@ import "fmt"
 // TODO better design. dispatch status event to status element to maintain LOB
 templ JournalView() {
 	<style>
-        input[name="date"] {
+        #datepicker {
             margin-bottom: 2px;
+        }
+        #datepicker::-webkit-calendar-picker-indicator{
+            display: none;
         }
         #journal-content-container {
             margin-bottom: 15px;
@@ -53,13 +56,79 @@ templ JournalView() {
         #status.status-err {
             color: var(--red-primary);
         }
+        .datepicker-dot {
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: red; /* You can change the color */
+            margin: 0 auto;
+            margin-top: 5px; /* Adjust the space between the day number and the dot */
+        }
     </style>
+	<div
+		id="app"
+		x-data="{
+            status: {
+                msg: 'Synchronized',
+                cls: '',
+            },
+        }"
+	>
+		<form
+			id="journal-form"
+		>
+			<input
+				id="datepicker"
+				name="date"
+				type="date"
+				@change="status.msg = 'Loading...'; status = await onDateChange()"
+			/>
+			<div id="journal-content-container">
+				<textarea
+					id="journal-content"
+					name="content"
+					autofocus
+					@input.throttle.1000ms="updateJournal('content')"
+				></textarea>
+			</div>
+			@energySlider(1, 100)
+			@emotionSelection()
+			<div id="form-footer">
+				<span id="status" x-text="status.msg" :class="status.cls"></span>
+			</div>
+		</form>
+	</div>
 	<script>
         const formEl = document.querySelector("#journal-form");
-        const dateEl = document.querySelector("#journal-form input[type='date']");
         const contentInput = document.querySelector("#journal-content");
         const emotionInput = document.querySelector("input[name='emotion_id']");
         const energyLevelInput = document.querySelector("#energy-slider");
+        const app = document.querySelector("#app");
+
+        // datepicker
+        const dateEl = document.querySelector("#datepicker");
+        dateEl.value = new Date().toLocaleDateString('en-CA');
+        onDateChange();
+        const datepicker = new AirDatepicker("#datepicker", {
+            locale: localeEn,
+            onSelect({date}) {
+                dateEl.value = date?.toLocaleDateString("en-CA");
+                onDateChange();
+            },
+            maxDate: dateEl.value,
+            /** @param {Date} date */
+            onRenderCell({date, cellType}) {
+                // TODO migrate to date type; fetch all in a month
+                console.log(date);
+                if (cellType === 'day') {
+                    return {
+                        // html: '<span class="datepicker-day-number">' + date. + '</span><span class="datepicker-dot"></span>'
+                    };
+                }
+            },
+            buttons: ['today'],
+        });
 
         /**
         * @typedef {Object} JournalData
@@ -87,10 +156,12 @@ templ JournalView() {
 
         /** @returns {Status} */
         async function onDateChange() {
+            app.status = { msg: "Loading..." };
+
             const resp = await fetch("/api/journal/"+dateEl.value);
 
             if (!resp.ok && resp.status != 404) {
-                return { msg: resp.statusText, cls: "status-err" };
+                app.status = { msg: resp.statusText, cls: "status-err" };
             }
 
             if (resp.ok) {
@@ -105,7 +176,7 @@ templ JournalView() {
                 resetEnergyLevel();
             }
 
-            return { msg: "Synchronized" };
+            app.status = { msg: "Test" };
         }
 
         /** @param {Response} response */
@@ -122,39 +193,6 @@ templ JournalView() {
             }
         }
     </script>
-	<div
-		id="app"
-		x-data="{
-            status: {
-                msg: 'Synchronized',
-                cls: '',
-            },
-        }"
-	>
-		<form
-			id="journal-form"
-		>
-			<input
-				type="date"
-				name="date"
-				@change="status.msg = 'Loading...'; status = await onDateChange()"
-				x-init="$el.value = new Date().toLocaleDateString('en-CA'); status = await onDateChange();"
-			/>
-			<div id="journal-content-container">
-				<textarea
-					id="journal-content"
-					name="content"
-					autofocus
-					@input.throttle.1000ms="updateJournal('content')"
-				></textarea>
-			</div>
-			@energySlider(1, 100)
-			@emotionSelection()
-			<div id="form-footer">
-				<span id="status" x-text="status.msg" :class="status.cls"></span>
-			</div>
-		</form>
-	</div>
 }
 
 templ emotionSelection() {

@@ -1,6 +1,9 @@
 <style>
-        input[name="date"] {
+        #datepicker {
             margin-bottom: 2px;
+        }
+        #datepicker::-webkit-calendar-picker-indicator{
+            display: none;
         }
         #journal-content-container {
             margin-bottom: 15px;
@@ -47,79 +50,21 @@
         #status.status-err {
             color: var(--red-primary);
         }
-    </style><script>
-        const formEl = document.querySelector("#journal-form");
-        const dateEl = document.querySelector("#journal-form input[type='date']");
-        const contentInput = document.querySelector("#journal-content");
-        const emotionInput = document.querySelector("input[name='emotion_id']");
-        const energyLevelInput = document.querySelector("#energy-slider");
-
-        /**
-        * @typedef {Object} JournalData
-        * @property {string} date
-        * @property {string} content
-        * @property {number} emotionID
-        * @property {number} energyLevel
-        */
-
-        /**
-        * @typedef {Object} Status
-        * @property {string} msg
-        * @property {string} cls
-        */
-
-        async function updateJournal(el) {
-            const formData = new FormData(formEl);
-            const response = await fetch(`/api/journal/${formData.get("date")}/${el}`, {
-                method: "POST",
-                body: formData.get(el),
-            });
-
-            return await handleResponse(response);
+        .datepicker-dot {
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: red; /* You can change the color */
+            margin: 0 auto;
+            margin-top: 5px; /* Adjust the space between the day number and the dot */
         }
-
-        /** @returns {Status} */
-        async function onDateChange() {
-            const resp = await fetch("/api/journal/"+dateEl.value);
-
-            if (!resp.ok && resp.status != 404) {
-                return { msg: resp.statusText, cls: "status-err" };
-            }
-
-            if (resp.ok) {
-                /** @type {JournalData} */
-                const journalData = await resp.json();
-                contentInput.value = journalData.content;
-                emotionInput.value = journalData.emotionID;
-                setEnergyLevel(journalData.energyLevel);
-            } else {
-                contentInput.value = '';
-                emotionInput.value = 0;
-                resetEnergyLevel();
-            }
-
-            return { msg: "Synchronized" };
-        }
-
-        /** @param {Response} response */
-        async function handleResponse(response) {
-            if (response.redirected) {
-                window.location.href = response.url;
-                return;
-            }
-
-            if (!response.ok) {
-                return { msg: (await response.json()).message, cls: 'status-err' };
-            } else {
-                return { msg: "Synchronized" };
-            }
-        }
-    </script><div id="app" x-data="{
+    </style><div id="app" x-data="{
             status: {
                 msg: &#39;Synchronized&#39;,
                 cls: &#39;&#39;,
             },
-        }"><form id="journal-form"><input type="date" name="date" @change="status.msg = &#39;Loading...&#39;; status = await onDateChange()" x-init="$el.value = new Date().toLocaleDateString(&#39;en-CA&#39;); status = await onDateChange();"><div id="journal-content-container"><textarea id="journal-content" name="content" autofocus @input.throttle.1000ms="updateJournal(&#39;content&#39;)"></textarea></div><style>
+        }"><form id="journal-form"><input id="datepicker" name="date" type="date" @change="status.msg = &#39;Loading...&#39;; status = await onDateChange()"><div id="journal-content-container"><textarea id="journal-content" name="content" autofocus @input.throttle.1000ms="updateJournal(&#39;content&#39;)"></textarea></div><style>
         input[type="range"] {
             width: 100%;
             height: 6px;
@@ -216,4 +161,97 @@
             display: inline-block;
             margin-right: 10px;
         }
-    </style><div class="emotion-selection-container"><fieldset required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" name="emotion_id" aria-label="Angry" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" name="emotion_id" aria-label="Anxious" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" name="emotion_id" aria-label="Depressed" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" name="emotion_id" aria-label="Sad" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" name="emotion_id" aria-label="Grumpy" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" name="emotion_id" aria-label="Neutral" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" name="emotion_id" aria-label="Hopeful" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" name="emotion_id" aria-label="Happy" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" name="emotion_id" aria-label="Joyous" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" name="emotion_id" aria-label="Estatic" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="10">🤩</label></div></fieldset></div><div id="form-footer"><span id="status" x-text="status.msg" :class="status.cls"></span></div></form></div>
+    </style><div class="emotion-selection-container"><fieldset required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" name="emotion_id" aria-label="Angry" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" name="emotion_id" aria-label="Anxious" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" name="emotion_id" aria-label="Depressed" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" name="emotion_id" aria-label="Sad" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" name="emotion_id" aria-label="Grumpy" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" name="emotion_id" aria-label="Neutral" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" name="emotion_id" aria-label="Hopeful" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" name="emotion_id" aria-label="Happy" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" name="emotion_id" aria-label="Joyous" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" name="emotion_id" aria-label="Estatic" @input="status = await updateJournal(&#39;emotion_id&#39;)"> <label for="10">🤩</label></div></fieldset></div><div id="form-footer"><span id="status" x-text="status.msg" :class="status.cls"></span></div></form></div><script>
+        const formEl = document.querySelector("#journal-form");
+        const contentInput = document.querySelector("#journal-content");
+        const emotionInput = document.querySelector("input[name='emotion_id']");
+        const energyLevelInput = document.querySelector("#energy-slider");
+        const app = document.querySelector("#app");
+
+        // datepicker
+        const dateEl = document.querySelector("#datepicker");
+        dateEl.value = new Date().toLocaleDateString('en-CA');
+        onDateChange();
+        const datepicker = new AirDatepicker("#datepicker", {
+            locale: localeEn,
+            onSelect({date}) {
+                dateEl.value = date?.toLocaleDateString("en-CA");
+                onDateChange();
+            },
+            maxDate: dateEl.value,
+            /** @param {Date} date */
+            onRenderCell({date, cellType}) {
+                // TODO migrate to date type; fetch all in a month
+                console.log(date);
+                if (cellType === 'day') {
+                    return {
+                        // html: '<span class="datepicker-day-number">' + date. + '</span><span class="datepicker-dot"></span>'
+                    };
+                }
+            },
+            buttons: ['today'],
+        });
+
+        /**
+        * @typedef {Object} JournalData
+        * @property {string} date
+        * @property {string} content
+        * @property {number} emotionID
+        * @property {number} energyLevel
+        */
+
+        /**
+        * @typedef {Object} Status
+        * @property {string} msg
+        * @property {string} cls
+        */
+
+        async function updateJournal(el) {
+            const formData = new FormData(formEl);
+            const response = await fetch(`/api/journal/${formData.get("date")}/${el}`, {
+                method: "POST",
+                body: formData.get(el),
+            });
+
+            return await handleResponse(response);
+        }
+
+        /** @returns {Status} */
+        async function onDateChange() {
+            app.status = { msg: "Loading..." };
+
+            const resp = await fetch("/api/journal/"+dateEl.value);
+
+            if (!resp.ok && resp.status != 404) {
+                app.status = { msg: resp.statusText, cls: "status-err" };
+            }
+
+            if (resp.ok) {
+                /** @type {JournalData} */
+                const journalData = await resp.json();
+                contentInput.value = journalData.content;
+                emotionInput.value = journalData.emotionID;
+                setEnergyLevel(journalData.energyLevel);
+            } else {
+                contentInput.value = '';
+                emotionInput.value = 0;
+                resetEnergyLevel();
+            }
+
+            app.status = { msg: "Test" };
+        }
+
+        /** @param {Response} response */
+        async function handleResponse(response) {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+
+            if (!response.ok) {
+                return { msg: (await response.json()).message, cls: 'status-err' };
+            } else {
+                return { msg: "Synchronized" };
+            }
+        }
+    </script>
