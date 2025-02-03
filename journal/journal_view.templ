@@ -35,20 +35,6 @@ templ JournalView() {
         #emotion-selection-container {
             margin-bottom: 1.5rem;
         }
-        button[type="submit"] {
-            padding: 0.5rem 1.2rem;
-            font-size: medium;
-            border-radius: 5px;
-            color: var(--grey-200);
-        }
-        button:not([disabled]) {
-            color: white;
-            background-color: var(--blue-primary);
-            border-color: transparent;
-        }
-        button:not([disabled]):hover {
-            background-color: var(--blue-secondary);
-        }
         #status {
             color: var(--grey-800);
             font-size: small;
@@ -73,20 +59,75 @@ templ JournalView() {
                 msg: 'Synchronized',
                 cls: '',
             },
+            selectedEmotionID: 0,
+            async onDateChange() {
+                this.status.msg = 'Loading...';
+                const resp = await fetch('/api/journal/'+$refs.date.value);
+
+                if (!resp.ok && resp.status != 404) {
+                    this.status = { msg: resp.statusText, cls: 'status-err' };
+                }
+
+                if (resp.ok) {
+                    const journalData = await resp.json();
+                    $refs.content.value = journalData.content;
+                    this.selectedEmotionID = journalData.emotionID;
+                    setEnergyLevel(journalData.energyLevel);
+                } else {
+                    $refs.content.value = '';
+                    this.selectedEmotionID = 0;
+                    resetEnergyLevel();
+                }
+
+                this.status.msg = 'Synchronized';
+            },
+            async updateJournal(el) {
+                this.status.msg = 'Loading...';
+                const formData = new FormData($refs.form);
+                const response = await fetch(`/api/journal/${formData.get('date')}/${el}`, {
+                    method: 'POST',
+                    body: formData.get(el),
+                });
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                if (!response.ok) {
+                    this.status = { msg: (await response.json()).message, cls: 'status-err' };
+                } else {
+                    this.status.msg = 'Synchronized';
+                }
+            }
+        }"
+		@keyup.s="
+        if ($event.ctrlKey) {
+            $event.preventDefault();
+            document.querySelector('button[type=\'submit\']')?.click();
+        }"
+		@keyup.e="
+        if ($event.ctrlKey) {
+            $event.preventDefault();
+            $refs.content.focus();
         }"
 	>
 		<form
 			id="journal-form"
+			x-ref="form"
 		>
 			<input
 				id="datepicker"
 				name="date"
 				type="date"
-				@change="status.msg = 'Loading...'; status = await onDateChange()"
+				x-ref="date"
+				@change="onDateChange"
+				x-init="$el.value = new Date().toLocaleDateString('en-CA'); await onDateChange();"
 			/>
 			<div id="journal-content-container">
 				<textarea
 					id="journal-content"
+					x-ref="content"
 					name="content"
 					autofocus
 					@input.throttle.1000ms="updateJournal('content')"
@@ -100,34 +141,27 @@ templ JournalView() {
 		</form>
 	</div>
 	<script>
-        const formEl = document.querySelector("#journal-form");
-        const contentInput = document.querySelector("#journal-content");
-        const emotionInput = document.querySelector("input[name='emotion_id']");
-        const energyLevelInput = document.querySelector("#energy-slider");
-        const app = document.querySelector("#app");
-
         // datepicker
-        const dateEl = document.querySelector("#datepicker");
-        dateEl.value = new Date().toLocaleDateString('en-CA');
-        onDateChange();
-        const datepicker = new AirDatepicker("#datepicker", {
+        const dateInput = document.querySelector("#datepicker");
+        const dp = new AirDatepicker("#datepicker", {
             locale: localeEn,
-            onSelect({date}) {
-                dateEl.value = date?.toLocaleDateString("en-CA");
-                onDateChange();
+            onSelect({date, datepicker}) {
+                datepicker.$el.value = date?.toLocaleDateString("en-CA");
+                dateInput.dispatchEvent(new CustomEvent("change"));
+                datepicker.cl
             },
-            maxDate: dateEl.value,
-            /** @param {Date} date */
-            onRenderCell({date, cellType}) {
-                // TODO migrate to date type; fetch all in a month
-                console.log(date);
-                if (cellType === 'day') {
-                    return {
-                        // html: '<span class="datepicker-day-number">' + date. + '</span><span class="datepicker-dot"></span>'
-                    };
-                }
-            },
+            maxDate: dateInput.value,
+            // /** @param {Date} date */
+            // onRenderCell({date, cellType}) {
+            //     // TODO migrate to date type; fetch all in a month
+            //     if (cellType === 'day') {
+            //         return {
+            //             html: '<span class="datepicker-day-number">' + date. + '</span><span class="datepicker-dot"></span>'
+            //         };
+            //     }
+            // },
             buttons: ['today'],
+            autoClose: true,
         });
 
         /**
@@ -143,55 +177,6 @@ templ JournalView() {
         * @property {string} msg
         * @property {string} cls
         */
-
-        async function updateJournal(el) {
-            const formData = new FormData(formEl);
-            const response = await fetch(`/api/journal/${formData.get("date")}/${el}`, {
-                method: "POST",
-                body: formData.get(el),
-            });
-
-            return await handleResponse(response);
-        }
-
-        /** @returns {Status} */
-        async function onDateChange() {
-            app.status = { msg: "Loading..." };
-
-            const resp = await fetch("/api/journal/"+dateEl.value);
-
-            if (!resp.ok && resp.status != 404) {
-                app.status = { msg: resp.statusText, cls: "status-err" };
-            }
-
-            if (resp.ok) {
-                /** @type {JournalData} */
-                const journalData = await resp.json();
-                contentInput.value = journalData.content;
-                emotionInput.value = journalData.emotionID;
-                setEnergyLevel(journalData.energyLevel);
-            } else {
-                contentInput.value = '';
-                emotionInput.value = 0;
-                resetEnergyLevel();
-            }
-
-            app.status = { msg: "Test" };
-        }
-
-        /** @param {Response} response */
-        async function handleResponse(response) {
-            if (response.redirected) {
-                window.location.href = response.url;
-                return;
-            }
-
-            if (!response.ok) {
-                return { msg: (await response.json()).message, cls: 'status-err' };
-            } else {
-                return { msg: "Synchronized" };
-            }
-        }
     </script>
 }
 
@@ -221,7 +206,8 @@ templ emotionSelection() {
 						value={ opt.getID() }
 						name="emotion_id"
 						aria-label={ opt.Name }
-						@input="status = await updateJournal('emotion_id')"
+						x-model="selectedEmotionID"
+						@input="updateJournal('emotion_id')"
 					/>
 					<label for={ opt.getID() }>{ opt.Emoji }</label>
 				</div>
@@ -289,7 +275,7 @@ templ energySlider(min, max int) {
 				min={ fmt.Sprintf("%d", min) }
 				max={ fmt.Sprintf("%d", max) }
 				@input="setEnergyLevel($el.value)"
-				@input.debounce.500ms="status = await updateJournal('energy_level')"
+				@input.debounce.500ms="updateJournal('energy_level')"
 				x-init="resetEnergyLevel"
 			/>
 			<div id="slider-thumb">⚪</div>

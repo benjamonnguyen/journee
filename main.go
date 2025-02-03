@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 
@@ -22,7 +23,11 @@ func main() {
 
 	// router
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		se.Router.GET("/{path...}", apis.Static(os.DirFS("public"), false))
+		se.Router.GET("/", func(e *core.RequestEvent) error {
+			return e.Redirect(http.StatusTemporaryRedirect, "/journal")
+		})
+
+		se.Router.GET("/public/{path...}", apis.Static(os.DirFS("public"), false))
 
 		// auth
 		se.Router.GET("/login", func(e *core.RequestEvent) error {
@@ -33,8 +38,8 @@ func main() {
 
 		se.Router.GET("/logout", handler.Logout)
 
-		// app
-		se.Router.GET("/app", App).
+		// journal-view
+		se.Router.GET("/journal", handler.JournalView).
 			BindFunc(handler.AuthMiddleware)
 
 		se.Router.POST("/api/journal/{date}/{field}", handler.UpsertJournal).
@@ -43,6 +48,7 @@ func main() {
 		se.Router.GET("/api/journal/{date}", handler.GetJournal).
 			BindFunc(handler.AuthMiddleware)
 
+		//
 		return se.Next()
 	})
 
@@ -53,8 +59,4 @@ func main() {
 	})
 
 	panic(app.Start())
-}
-
-func App(e *core.RequestEvent) error {
-	return e.FileFS(os.DirFS("app"), "journal_view.html")
 }

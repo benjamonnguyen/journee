@@ -1,0 +1,31 @@
+package templates
+
+templ Base(main templ.Component) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+			<title>journee</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+			<link rel="stylesheet" href="/public/styles/index.css"/>
+			<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"> -->
+			<script src="https://unpkg.com/htmx.org@2.x.x"></script>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<script src="/public/js/air-datepicker/air-datepicker.js"></script>
+			<script src="/public/js/air-datepicker/locale/en.js"></script>
+			<link rel="stylesheet" href="/public/js/air-datepicker/air-datepicker.css"/>
+		</head>
+		<body>
+			<navbar>
+				<h1 class="logo">journee</h1>
+				<div>
+					<a href="/logout">Log out</a>
+				</div>
+			</navbar>
+			<main>
+				@main
+			</main>
+			<footer></footer>
+		</body>
+	</html>
+}

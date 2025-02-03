@@ -2,6 +2,7 @@ package handler
 
 import (
 	"io"
+	"os"
 	"strconv"
 	"time"
 
@@ -9,6 +10,10 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
+
+func JournalView(e *core.RequestEvent) error {
+	return e.FileFS(os.DirFS("views"), "journal_view.html")
+}
 
 func UpsertJournal(e *core.RequestEvent) error {
 	data, err := io.ReadAll(e.Request.Body)

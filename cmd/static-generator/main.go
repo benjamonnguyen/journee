@@ -5,14 +5,15 @@ import (
 	"os"
 
 	"benjinguyen.me/journee/journal"
+	"benjinguyen.me/journee/templates"
 )
 
 func main() {
-	f, err := os.Create("app/journal_view.html")
+	f, err := os.Create("views/journal_view.html")
 	panicIf(err)
 
-	app := journal.JournalView()
-	app.Render(context.Background(), f)
+	journalView := templates.Base(journal.JournalView())
+	journalView.Render(context.Background(), f)
 }
 
 func panicIf(err error) {
