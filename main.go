@@ -31,7 +31,7 @@ func main() {
 
 		// auth
 		se.Router.GET("/login", func(e *core.RequestEvent) error {
-			return e.FileFS(os.DirFS("app"), "login.html")
+			return e.FileFS(os.DirFS("public"), "login.html")
 		})
 
 		se.Router.POST("/login", handler.Login)

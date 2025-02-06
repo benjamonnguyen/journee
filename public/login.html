@@ -3,9 +3,9 @@
 
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
         <title>Login</title>
-        <link rel="stylesheet" href="/styles/index.css">
+        <link rel="stylesheet" href="/public/styles/index.css">
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
 
@@ -111,8 +111,32 @@
 
     <body>
         <main>
-            <div class="login-container" x-data="{ form: { Email: '', Password: '' }, status: '' }"
-                x-init="autofillEmail">
+            <div class="login-container" x-data="{
+                    form: { Email: '', Password: '' },
+                    status: '',
+                    async login() {
+                        const resp = await fetch('/login', {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            method: 'POST',
+                            body: JSON.stringify(this.form),
+                        });
+            
+                        if (!resp.ok) {
+                            this.status = (await resp.json()).message;
+                        } else {
+                            window.location.href = '/';
+                        }
+                    },
+                }" x-init="
+                    const cookies = document.cookie.split(';');
+                    const userEmailCookie = cookies.find(c => c.startsWith('user_email='));
+                    console.log(userEmailCookie)
+                    if (userEmailCookie) {
+                        form.Email = userEmailCookie.split('=')[1];
+                        $refs.pw.focus();
+                    }">
                 <div class="login-header">
                     <h1 class="logo">journee</h1>
                 </div>
@@ -123,7 +147,7 @@
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" x-model="form.Password" required>
+                        <input type="password" x-model="form.Password" x-ref="pw" required>
                     </div>
                     <button type="submit" class="login-button">Log In</button>
                 </form>
@@ -136,32 +160,5 @@
             </div>
         </main>
     </body>
-
-    <script>
-        async function login() {
-            const resp = await fetch("/login", {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                method: "POST",
-                body: JSON.stringify(this.form),
-            });
-
-            if (!resp.ok) {
-                this.status = (await resp.json()).message;
-            } else {
-                window.location.href = "/";
-            }
-        }
-
-        function autofillEmail() {
-            const cookies = document.cookie.split(";");
-            const userEmailCookie = cookies.find(c => c.startsWith("user_email="));
-            if (userEmailCookie) {
-                this.form.Email = userEmailCookie.split("=")[1];
-                document.querySelector("input[type='password']")?.focus();
-            }
-        }
-    </script>
 
 </html>

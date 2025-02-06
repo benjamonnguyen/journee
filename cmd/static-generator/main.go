@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	f, err := os.Create("views/journal_view.html")
+	f, err := os.Create("public/journal_view.html")
 	panicIf(err)
 
 	journalView := templates.Base(journal.JournalView())
