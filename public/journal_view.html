@@ -5,8 +5,16 @@
         #datepicker::-webkit-calendar-picker-indicator{
             display: none;
         }
+        #journal-form {
+            width: 90vw;
+        }
         #journal-content-container {
             margin-bottom: 15px;
+        }
+        @media (max-width: 767px) {
+            #journal-content:focus {
+                height: 50vh;
+            }
         }
         #journal-content {
             font-size:12pt;
@@ -23,11 +31,20 @@
             width: 100%;
             margin-top: 1.5rem;
         }
+        #tracker-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
         #energy-slider-container {
             margin-bottom: 1.5rem;
+            max-width: 30rem;
+            width: 100%;
         }
         #emotion-selection-container {
             margin-bottom: 1.5rem;
+            max-width: 30rem;
         }
         #status {
             color: var(--grey-800);
@@ -73,7 +90,6 @@
                 this.status.msg = &#39;Synchronized&#39;;
             },
             async updateJournal(el) {
-                this.status.msg = &#39;Loading...&#39;;
                 const formData = new FormData($refs.form);
                 const response = await fetch(`/api/journal/${formData.get(&#39;date&#39;)}/${el}`, {
                     method: &#39;POST&#39;,
@@ -90,7 +106,8 @@
                 } else {
                     this.status.msg = &#39;Synchronized&#39;;
                 }
-            }
+            },
+            showTrackers: true,
         }" @keyup.s="
         if ($event.ctrlKey) {
             $event.preventDefault();
@@ -99,7 +116,13 @@
         if ($event.ctrlKey) {
             $event.preventDefault();
             $refs.content.focus();
-        }"><form id="journal-form" x-ref="form"><input id="datepicker" name="date" type="date" x-ref="date" @change="onDateChange" x-init="$el.value = new Date().toLocaleDateString(&#39;en-CA&#39;); await onDateChange();"><div id="journal-content-container"><textarea id="journal-content" x-ref="content" name="content" autofocus @input.throttle.1000ms="updateJournal(&#39;content&#39;)"></textarea></div><style>
+        }"><form id="journal-form" x-ref="form"><input id="datepicker" name="date" type="date" x-ref="date" @change="onDateChange" x-init="$el.value = new Date().toLocaleDateString(&#39;en-CA&#39;); await onDateChange();"><div id="journal-content-container"><textarea id="journal-content" x-ref="content" name="content" @input="status.msg = &#39;Unsaved changes&#39;" @input.throttle.1000ms="updateJournal(&#39;content&#39;)" @input.debounce.1000ms="updateJournal(&#39;content&#39;)" @blur="showTrackers = true; $dispatch(&#39;update-slider&#39;)" @focus="
+                    if (window.innerWidth &lt; 768) {
+                        showTrackers = false;
+                        $refs.date.scrollIntoView({
+                            block: &#39;start&#39;
+                        });
+                    }"></textarea></div><div id="tracker-container" x-show="showTrackers"><style>
         input[type="range"] {
             width: 100%;
             height: 6px;
@@ -146,7 +169,7 @@
             pointer-events: none;
             user-select: none;
         }
-    </style><div id="energy-slider-container"><div style="position: relative;"><legend id="value-display">What was your energy level when you woke up?</legend> <input type="range" id="energy-slider" name="energy_level" min="1" max="100" @input="setEnergyLevel($el.value)" @input.debounce.500ms="updateJournal(&#39;energy_level&#39;)" x-init="resetEnergyLevel"><div id="slider-thumb">⚪</div></div></div><script id="energy-thresholds" type="application/json">[{"ID":1,"Emoji":"💀","Threshold":11},{"ID":2,"Emoji":"😪","Threshold":22},{"ID":3,"Emoji":"🥱","Threshold":33},{"ID":4,"Emoji":"😮‍💨","Threshold":44},{"ID":5,"Emoji":"😑","Threshold":55},{"ID":6,"Emoji":"😌","Threshold":66},{"ID":7,"Emoji":"🙂","Threshold":77},{"ID":8,"Emoji":"😊","Threshold":88},{"ID":9,"Emoji":"🤩","Threshold":100}]
+    </style><div id="energy-slider-container"><div style="position: relative;"><legend id="value-display">What was your energy level when you woke up?</legend> <input type="range" id="energy-slider" name="energy_level" min="1" max="100" @input="setEnergyLevel($el.value)" @input.debounce.500ms="status.msg = &#39;Saving...&#39;; updateJournal(&#39;energy_level&#39;)" x-init="resetEnergyLevel" @update-slider.window="$nextTick(() =&gt; updateSliderThumb())"><div id="slider-thumb">⚪</div></div></div><script id="energy-thresholds" type="application/json">[{"ID":1,"Emoji":"💀","Threshold":11},{"ID":2,"Emoji":"😪","Threshold":22},{"ID":3,"Emoji":"🥱","Threshold":33},{"ID":4,"Emoji":"😮‍💨","Threshold":44},{"ID":5,"Emoji":"😑","Threshold":55},{"ID":6,"Emoji":"😌","Threshold":66},{"ID":7,"Emoji":"🙂","Threshold":77},{"ID":8,"Emoji":"😊","Threshold":88},{"ID":9,"Emoji":"🤩","Threshold":100}]
 </script><script>
         const slider = document.getElementById('energy-slider');
         const sliderThumb = document.getElementById('slider-thumb');
@@ -196,7 +219,7 @@
             display: inline-block;
             margin-right: 10px;
         }
-    </style><div class="emotion-selection-container"><fieldset required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" name="emotion_id" aria-label="Angry" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" name="emotion_id" aria-label="Anxious" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" name="emotion_id" aria-label="Depressed" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" name="emotion_id" aria-label="Sad" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" name="emotion_id" aria-label="Grumpy" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" name="emotion_id" aria-label="Neutral" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" name="emotion_id" aria-label="Hopeful" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" name="emotion_id" aria-label="Happy" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" name="emotion_id" aria-label="Joyous" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" name="emotion_id" aria-label="Estatic" x-model="selectedEmotionID" @input="updateJournal(&#39;emotion_id&#39;)"> <label for="10">🤩</label></div></fieldset></div><div id="form-footer"><span id="status" x-text="status.msg" :class="status.cls"></span></div></form></div><script>
+    </style><div class="emotion-selection-container"><fieldset required><legend style="align: center; margin: 0 auto;">How did you feel overall today?</legend> <div><input type="radio" id="1" value="1" name="emotion_id" aria-label="Angry" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="1">😠</label></div><div><input type="radio" id="2" value="2" name="emotion_id" aria-label="Anxious" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="2">😖</label></div><div><input type="radio" id="3" value="3" name="emotion_id" aria-label="Depressed" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="3">😞</label></div><div><input type="radio" id="4" value="4" name="emotion_id" aria-label="Sad" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="4">😔</label></div><div><input type="radio" id="5" value="5" name="emotion_id" aria-label="Grumpy" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="5">😒</label></div><div><input type="radio" id="6" value="6" name="emotion_id" aria-label="Neutral" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="6">😑</label></div><div><input type="radio" id="7" value="7" name="emotion_id" aria-label="Hopeful" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="7">😌</label></div><div><input type="radio" id="8" value="8" name="emotion_id" aria-label="Happy" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="8">🙂</label></div><div><input type="radio" id="9" value="9" name="emotion_id" aria-label="Joyous" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="9">😄</label></div><div><input type="radio" id="10" value="10" name="emotion_id" aria-label="Estatic" x-model="selectedEmotionID" @input="status.msg = &#39;Saving...&#39;; updateJournal(&#39;emotion_id&#39;)"> <label for="10">🤩</label></div></fieldset></div></div><div id="form-footer"><span id="status" x-text="status.msg" :class="status.cls"></span></div></form></div><script>
         // datepicker
         const dateInput = document.querySelector("#datepicker");
         const dp = new AirDatepicker("#datepicker", {

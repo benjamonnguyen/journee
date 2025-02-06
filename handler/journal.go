@@ -12,7 +12,7 @@ import (
 )
 
 func JournalView(e *core.RequestEvent) error {
-	return e.FileFS(os.DirFS("views"), "journal_view.html")
+	return e.FileFS(os.DirFS("public"), "journal_view.html")
 }
 
 func UpsertJournal(e *core.RequestEvent) error {

@@ -26,7 +26,6 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 ## TODO
 - [D] Encrypt journal content with server-side key
 - [A] Impl cursor to go to next/prev date with content
-- [A] Autosave 
 - [ ] Use datepicker lib for customizability
 - [B] Prevent going into the future (max date)
 - [ ] On get persist hash clientside, on update check hash against server data to resolve conflicts
@@ -39,3 +38,6 @@ Submit your daily journal entry -> Reflect on goals, screentime, etc. express gr
 ## Before Production
 - `make gen` to generate static files from templates
 - `docker build --platform linux/amd64 -t journee .`
+
+Use hx-push-url to update path and swap body/main instead of full page reload?
+Can I refresh DOM?

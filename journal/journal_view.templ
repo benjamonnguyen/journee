@@ -11,8 +11,16 @@ templ JournalView() {
         #datepicker::-webkit-calendar-picker-indicator{
             display: none;
         }
+        #journal-form {
+            width: 90vw;
+        }
         #journal-content-container {
             margin-bottom: 15px;
+        }
+        @media (max-width: 767px) {
+            #journal-content:focus {
+                height: 50vh;
+            }
         }
         #journal-content {
             font-size:12pt;
@@ -29,11 +37,20 @@ templ JournalView() {
             width: 100%;
             margin-top: 1.5rem;
         }
+        #tracker-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
         #energy-slider-container {
             margin-bottom: 1.5rem;
+            max-width: 30rem;
+            width: 100%;
         }
         #emotion-selection-container {
             margin-bottom: 1.5rem;
+            max-width: 30rem;
         }
         #status {
             color: var(--grey-800);
@@ -82,7 +99,6 @@ templ JournalView() {
                 this.status.msg = 'Synchronized';
             },
             async updateJournal(el) {
-                this.status.msg = 'Loading...';
                 const formData = new FormData($refs.form);
                 const response = await fetch(`/api/journal/${formData.get('date')}/${el}`, {
                     method: 'POST',
@@ -99,7 +115,8 @@ templ JournalView() {
                 } else {
                     this.status.msg = 'Synchronized';
                 }
-            }
+            },
+            showTrackers: true,
         }"
 		@keyup.s="
         if ($event.ctrlKey) {
@@ -129,12 +146,23 @@ templ JournalView() {
 					id="journal-content"
 					x-ref="content"
 					name="content"
-					autofocus
+					@input="status.msg = 'Unsaved changes'"
 					@input.throttle.1000ms="updateJournal('content')"
+					@input.debounce.1000ms="updateJournal('content')"
+					@blur="showTrackers = true; $dispatch('update-slider')"
+					@focus="
+                    if (window.innerWidth < 768) {
+                        showTrackers = false;
+                        $refs.date.scrollIntoView({
+                            block: 'start'
+                        });
+                    }"
 				></textarea>
 			</div>
-			@energySlider(1, 100)
-			@emotionSelection()
+			<div id="tracker-container" x-show="showTrackers">
+				@energySlider(1, 100)
+				@emotionSelection()
+			</div>
 			<div id="form-footer">
 				<span id="status" x-text="status.msg" :class="status.cls"></span>
 			</div>
@@ -207,7 +235,7 @@ templ emotionSelection() {
 						name="emotion_id"
 						aria-label={ opt.Name }
 						x-model="selectedEmotionID"
-						@input="updateJournal('emotion_id')"
+						@input="status.msg = 'Saving...'; updateJournal('emotion_id')"
 					/>
 					<label for={ opt.getID() }>{ opt.Emoji }</label>
 				</div>
@@ -275,8 +303,9 @@ templ energySlider(min, max int) {
 				min={ fmt.Sprintf("%d", min) }
 				max={ fmt.Sprintf("%d", max) }
 				@input="setEnergyLevel($el.value)"
-				@input.debounce.500ms="updateJournal('energy_level')"
+				@input.debounce.500ms="status.msg = 'Saving...'; updateJournal('energy_level')"
 				x-init="resetEnergyLevel"
+				@update-slider.window="$nextTick(() => updateSliderThumb())"
 			/>
 			<div id="slider-thumb">⚪</div>
 		</div>
