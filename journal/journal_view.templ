@@ -4,71 +4,6 @@ import "fmt"
 
 // TODO better design. dispatch status event to status element to maintain LOB
 templ JournalView() {
-	<style>
-        #datepicker {
-            margin-bottom: 2px;
-        }
-        #datepicker::-webkit-calendar-picker-indicator{
-            display: none;
-        }
-        #journal-form {
-            width: 90vw;
-        }
-        #journal-content-container {
-            margin-bottom: 15px;
-        }
-        @media (max-width: 767px) {
-            #journal-content:focus {
-                height: 50vh;
-            }
-        }
-        #journal-content {
-            font-size:12pt;
-            resize: none;
-            width: 100%;
-            height: 20vh;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        #form-footer {
-            display: flex;
-            align-items: center;
-            flex-direction: column;
-            width: 100%;
-            margin-top: 1.5rem;
-        }
-        #tracker-container {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            flex-direction: column;
-        }
-        #energy-slider-container {
-            margin-bottom: 1.5rem;
-            max-width: 30rem;
-            width: 100%;
-        }
-        #emotion-selection-container {
-            margin-bottom: 1.5rem;
-            max-width: 30rem;
-        }
-        #status {
-            color: var(--grey-800);
-            font-size: small;
-        }
-        #status.status-err {
-            color: var(--red-primary);
-        }
-        .datepicker-dot {
-            display: block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: red; /* You can change the color */
-            margin: 0 auto;
-            margin-top: 5px; /* Adjust the space between the day number and the dot */
-        }
-    </style>
 	<div
 		id="app"
 		x-data="{
@@ -118,16 +53,9 @@ templ JournalView() {
             },
             showTrackers: true,
         }"
-		@keyup.s="
-        if ($event.ctrlKey) {
-            $event.preventDefault();
-            document.querySelector('button[type=\'submit\']')?.click();
-        }"
-		@keyup.e="
-        if ($event.ctrlKey) {
-            $event.preventDefault();
-            $refs.content.focus();
-        }"
+		@keyup.ctrl.e.window.prevent="$refs.content.focus()"
+		@keyup.ctrl.d.window.prevent="$refs.date.focus()"
+		@keyup.ctrl.left.window.prevent="console.log('TODO go next date')"
 	>
 		<form
 			id="journal-form"
@@ -136,7 +64,6 @@ templ JournalView() {
 			<input
 				id="datepicker"
 				name="date"
-				type="date"
 				x-ref="date"
 				@change="onDateChange"
 				x-init="$el.value = new Date().toLocaleDateString('en-CA'); await onDateChange();"
@@ -146,12 +73,12 @@ templ JournalView() {
 					id="journal-content"
 					x-ref="content"
 					name="content"
-					@input="status.msg = 'Unsaved changes'"
+					@input="status = { msg: 'Unsaved changes' }"
 					@input.throttle.1000ms="updateJournal('content')"
 					@input.debounce.1000ms="updateJournal('content')"
 					@blur="showTrackers = true; $dispatch('update-slider')"
 					@focus="
-                    if (window.innerWidth < 768) {
+                    if (isMobile()) {
                         showTrackers = false;
                         $refs.date.scrollIntoView({
                             block: 'start'
@@ -169,6 +96,10 @@ templ JournalView() {
 		</form>
 	</div>
 	<script>
+        function isMobile() {
+            return window.innerWidth < 768;
+        }
+
         // datepicker
         const dateInput = document.querySelector("#datepicker");
         const dp = new AirDatepicker("#datepicker", {
@@ -188,8 +119,18 @@ templ JournalView() {
             //         };
             //     }
             // },
-            buttons: ['today'],
+            buttons: [
+                {
+                    content: 'Today',
+                    onClick: (dp) => {
+                        let date = new Date();
+                        dp.selectDate(date);
+                        dp.setViewDate(date);
+                    }
+                },
+            ],
             autoClose: true,
+            isMobile: isMobile(),
         });
 
         /**
@@ -206,6 +147,73 @@ templ JournalView() {
         * @property {string} cls
         */
     </script>
+	<style>
+        #datepicker {
+            margin-bottom: 2px;
+        }
+        #datepicker::-webkit-calendar-picker-indicator{
+            display: none;
+        }
+        #journal-form {
+            width: 100%;
+        }
+        #journal-content-container {
+            margin-bottom: 15px;
+        }
+        @media (max-width: 767px) {
+            #journal-content:focus {
+                height: 50vh;
+            }#journal-content {
+                height: 20vh;
+            }
+        }
+        #journal-content {
+            font-size:12pt;
+            resize: none;
+            width: 100%;
+            height: 40vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #form-footer {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+        #tracker-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+        #energy-slider-container {
+            margin-bottom: 1.5rem;
+            max-width: 30rem;
+            width: 100%;
+        }
+        #emotion-selection-container {
+            margin-bottom: 1.5rem;
+            max-width: 30rem;
+        }
+        #status {
+            color: var(--grey-800);
+            font-size: small;
+        }
+        #status.status-err {
+            color: var(--red-primary);
+        }
+        .datepicker-dot {
+            display: block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: red; /* You can change the color */
+            margin: 0 auto;
+            margin-top: 5px; /* Adjust the space between the day number and the dot */
+        }
+    </style>
 }
 
 templ emotionSelection() {
@@ -235,7 +243,7 @@ templ emotionSelection() {
 						name="emotion_id"
 						aria-label={ opt.Name }
 						x-model="selectedEmotionID"
-						@input="status.msg = 'Saving...'; updateJournal('emotion_id')"
+						@input="status = { msg: 'Saving...' }; updateJournal('emotion_id')"
 					/>
 					<label for={ opt.getID() }>{ opt.Emoji }</label>
 				</div>
@@ -303,7 +311,7 @@ templ energySlider(min, max int) {
 				min={ fmt.Sprintf("%d", min) }
 				max={ fmt.Sprintf("%d", max) }
 				@input="setEnergyLevel($el.value)"
-				@input.debounce.500ms="status.msg = 'Saving...'; updateJournal('energy_level')"
+				@input.debounce.500ms="status = { msg: 'Saving...' }; updateJournal('energy_level')"
 				x-init="resetEnergyLevel"
 				@update-slider.window="$nextTick(() => updateSliderThumb())"
 			/>

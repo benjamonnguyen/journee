@@ -7,4 +7,4 @@ serve:
 
 # PROD
 build:
-	make gen && docker build --platform linux/amd64 -t journee .
+	go run . migrate history-sync || true && make gen && docker build --platform linux/amd64 -t journee .

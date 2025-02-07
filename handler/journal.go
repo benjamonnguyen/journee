@@ -4,11 +4,11 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"time"
 
 	"benjinguyen.me/journee/journal"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 func JournalView(e *core.RequestEvent) error {
@@ -25,25 +25,27 @@ func UpsertJournal(e *core.RequestEvent) error {
 	date := e.Request.PathValue("date")
 	e.App.Logger().Debug("upserting journal", "body", body, "date", date)
 
-	if _, err := time.Parse(time.DateOnly, date); err != nil {
+	parsedDate, err := types.ParseDateTime(date)
+	if err != nil {
 		return e.BadRequestError("invalid date argument", err)
 	}
 
 	record, _ := e.App.FindFirstRecordByFilter(
 		"journals",
 		"date = {:date} &&  user = {:user}",
-		dbx.Params{"date": date, "user": e.Auth.Id},
+		dbx.Params{"date": parsedDate, "user": e.Auth.Id},
 	)
 
 	// create
 	if record == nil {
+		e.App.Logger().Debug("creating journal record")
 		collection, err := e.App.FindCollectionByNameOrId("journals")
 		if err != nil {
 			return err
 		}
 
 		record = core.NewRecord(collection)
-		record.Set("date", date)
+		record.Set("date", parsedDate)
 		record.Set("user", e.Auth.Id)
 	}
 
@@ -77,7 +79,11 @@ func UpsertJournal(e *core.RequestEvent) error {
 }
 
 func GetJournal(e *core.RequestEvent) error {
-	date := e.Request.PathValue("date")
+	date, err := types.ParseDateTime(e.Request.PathValue("date"))
+	if err != nil {
+		return err
+	}
+
 	record, _ := e.App.FindFirstRecordByFilter(
 		"journals",
 		"date = {:date} &&  user = {:user}",
@@ -88,7 +94,6 @@ func GetJournal(e *core.RequestEvent) error {
 	}
 
 	return e.JSON(200, journal.GetJournalResponse{
-		Date:        date,
 		Content:     record.GetString("content"),
 		EmotionID:   journal.EmotionID(record.GetInt("emotion_id")),
 		EnergyLevel: record.GetInt("energy_level"),

@@ -7,7 +7,6 @@ type UpsertJournalRequest struct {
 }
 
 type GetJournalResponse struct {
-	Date        string    `json:"date"`
 	Content     string    `json:"content"`
 	EmotionID   EmotionID `json:"emotionID"`
 	EnergyLevel int       `json:"energyLevel"`
